@@ -7,7 +7,8 @@ from app import create_app
 from app.config import Config
 
 # Create Flask app
-app = create_app(os.getenv('FLASK_ENV', 'default'))
+# Default to production for safer deployments
+app = create_app(os.getenv('FLASK_ENV', 'production'))
 
 if __name__ == '__main__':
     print("🚀 Starting Instagram Meta Insight Dashboard...")

@@ -1,5 +1,17 @@
 // API Functions
 const API = {
+    _uploadId: null,
+
+    setUploadId(uploadId) {
+        this._uploadId = uploadId;
+    },
+
+    _withUploadId(url) {
+        if (!this._uploadId) return url;
+        const sep = url.includes('?') ? '&' : '?';
+        return `${url}${sep}upload_id=${encodeURIComponent(this._uploadId)}`;
+    },
+
     async uploadFile(file) {
         const formData = new FormData();
         formData.append('file', file);
@@ -18,22 +30,22 @@ const API = {
 
 
     async getContentTypeAnalysis() {
-        const response = await fetch('/content-type-analysis');
+        const response = await fetch(this._withUploadId('/content-type-analysis'));
         return await response.json();
     },
 
     async getOutlierAnalysis() {
-        const response = await fetch('/outlier-analysis');
+        const response = await fetch(this._withUploadId('/outlier-analysis'));
         return await response.json();
     },
 
     async getQualityAnalysis() {
-        const response = await fetch('/quality-analysis');
+        const response = await fetch(this._withUploadId('/quality-analysis'));
         return await response.json();
     },
 
     async getFollowerTrend() {
-        const response = await fetch('/follower-trend');
+        const response = await fetch(this._withUploadId('/follower-trend'));
         const data = await response.json();
         console.log('🔍 Follower Trend API Response:', data);
         
@@ -49,12 +61,12 @@ const API = {
     },
 
     async getCategoryAnalysis() {
-        const response = await fetch('/category-analysis');
+        const response = await fetch(this._withUploadId('/category-analysis'));
         return await response.json();
     },
 
     async getDurationAnalysis() {
-        const response = await fetch('/duration-analysis');
+        const response = await fetch(this._withUploadId('/duration-analysis'));
         return await response.json();
     },
 

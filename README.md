@@ -39,7 +39,7 @@ cp .env.example .env
 
 3. Jalankan aplikasi: ▶️
 ```bash
-python app.py
+python wsgi.py
 ```
 
 4. Buka browser dan akses: 🌐
@@ -79,3 +79,8 @@ Dashboard mendukung file CSV Instagram Insight dengan kolom:
 - **Frontend**: HTML5, Tailwind CSS, Chart.js 🎨
 - **Data Processing**: Pandas 🐼
 - **Icons**: Lucide Icons 🎯
+
+## ⚠️ Catatan Deploy (Vercel)
+
+- Endpoint analisis sekarang **butuh** `upload_id` (didapat dari respons `/upload`).
+- Deploy serverless punya limit body request; jika upload besar gagal, pertimbangkan kompresi/limit ukuran CSV.

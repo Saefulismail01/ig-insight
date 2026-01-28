@@ -2,6 +2,21 @@
 (function () {
     'use strict';
 
+    function escapeHtml(value) {
+        const str = value === null || value === undefined ? '' : String(value);
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
+    function escapeAttr(value) {
+        // For HTML attributes: escapeHtml + strip newlines
+        return escapeHtml(value).replace(/\r?\n/g, ' ');
+    }
+
     // Initialize when DOM is loaded
     document.addEventListener('DOMContentLoaded', init);
 
@@ -107,6 +122,10 @@
 
             if (result.success) {
                 STATE.dashboardData = result.data;
+                STATE.uploadId = result.upload_id || null;
+                if (STATE.uploadId) {
+                    API.setUploadId(STATE.uploadId);
+                }
                 UI.showSuccess('File processed successfully!');
                 showDashboard();
             } else {
@@ -212,7 +231,7 @@
             // Update insight layer
             const insightEl = document.getElementById('followerTrendInsight');
             if (insightEl && data.summary_insight) {
-                insightEl.innerHTML = `💡 ${data.summary_insight}`;
+                insightEl.textContent = `💡 ${data.summary_insight}`;
             }
         } else {
             console.warn('Follower trend data missing or invalid', data);
@@ -286,7 +305,7 @@
 
             renderOutlierAnalysis(data);
         } catch (error) {
-            container.innerHTML = `<p style="color: var(--danger); text-align: center; padding: 2rem;">❌ ${error.message}</p>`;
+            container.innerHTML = `<p style="color: var(--danger); text-align: center; padding: 2rem;">❌ ${escapeHtml(error.message)}</p>`;
         }
     }
 
@@ -339,18 +358,17 @@
             else if (desc.includes('#edu')) { category = '#edu'; }
 
             const cardStyle = postUrl ? 'cursor: pointer;' : '';
-            // Escape URL for HTML attribute
-            const safeUrl = postUrl ? postUrl.replace(/"/g, '&quot;').replace(/'/g, '&#39;') : '';
+            const safeUrl = postUrl ? escapeAttr(postUrl) : '';
 
             return `
                 <div class="post-card" style="${cardStyle}" data-url="${safeUrl}" title="${postUrl ? 'Klik untuk membuka postingan' : ''}">
                     <div class="post-rank">${idx + 1}</div>
                     <div class="post-details">
-                        <div class="post-title">${post.short_description || 'No description'}</div>
+                        <div class="post-title">${escapeHtml(post.short_description || 'No description')}</div>
                         <div class="post-meta" style="display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem; color: var(--text-secondary); font-size: 0.85rem;">
                             <span>${new Date(post.Posted || post['Publish time']).toLocaleDateString('id-ID')}</span>
-                            ${postType ? `<span>|</span><span>${postType}</span>` : ''}
-                            ${category ? `<span>|</span><span>${category}</span>` : ''}
+                            ${postType ? `<span>|</span><span>${escapeHtml(postType)}</span>` : ''}
+                            ${category ? `<span>|</span><span>${escapeHtml(category)}</span>` : ''}
                         </div>
                     </div>
                     <div class="post-metrics">
@@ -380,7 +398,7 @@
 
             renderQualityAnalysis(data);
         } catch (error) {
-            container.innerHTML = `<p style="color: var(--danger); text-align: center; padding: 2rem;">❌ ${error.message}</p>`;
+            container.innerHTML = `<p style="color: var(--danger); text-align: center; padding: 2rem;">❌ ${escapeHtml(error.message)}</p>`;
         }
     }
 
@@ -407,7 +425,7 @@
             <div class="quality-insights">
                 <h4>💡 Quality Insights</h4>
                 <ul>
-                    ${data.quality_insights.map(insight => `<li>${insight}</li>`).join('')}
+                    ${data.quality_insights.map(insight => `<li>${escapeHtml(insight)}</li>`).join('')}
                 </ul>
             </div>
             
@@ -436,7 +454,7 @@
                 // Update insight layer
                 const insightEl = document.getElementById('followerTrendInsight');
                 if (insightEl && data.summary_insight) {
-                    insightEl.innerHTML = `💡 ${data.summary_insight}`;
+                    insightEl.textContent = `💡 ${data.summary_insight}`;
                 }
             }
         } catch (error) {
@@ -454,7 +472,7 @@
 
             renderCategoryAnalysis(data);
         } catch (error) {
-            container.innerHTML = `<p style="color: var(--danger); text-align: center; padding: 2rem;">❌ ${error.message}</p>`;
+            container.innerHTML = `<p style="color: var(--danger); text-align: center; padding: 2rem;">❌ ${escapeHtml(error.message)}</p>`;
         }
     }
 
@@ -478,9 +496,9 @@
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
                     ${data.insights.map(ins => `
                         <div style="padding: 1.25rem; border-radius: 12px; background: var(--bg-card); border-left: 4px solid var(--${ins.type === 'success' ? 'success' : ins.type === 'warning' ? 'warning' : 'info'});">
-                            <div style="font-weight: 700; margin-bottom: 0.5rem;">${ins.title}</div>
-                            <p style="margin: 0 0 0.5rem 0; color: var(--text-secondary); font-size: 0.9rem;">${ins.message}</p>
-                            <p style="margin: 0; color: var(--primary); font-weight: 600; font-size: 0.875rem;">💡 ${ins.recommendation}</p>
+                            <div style="font-weight: 700; margin-bottom: 0.5rem;">${escapeHtml(ins.title)}</div>
+                            <p style="margin: 0 0 0.5rem 0; color: var(--text-secondary); font-size: 0.9rem;">${escapeHtml(ins.message)}</p>
+                            <p style="margin: 0; color: var(--primary); font-weight: 600; font-size: 0.875rem;">💡 ${escapeHtml(ins.recommendation)}</p>
                         </div>
                     `).join('')}
                 </div>
@@ -547,7 +565,7 @@
 
             renderDurationAnalysis(data);
         } catch (error) {
-            container.innerHTML = `<p style="color: var(--danger); text-align: center; padding: 2rem;">❌ ${error.message}</p>`;
+            container.innerHTML = `<p style="color: var(--danger); text-align: center; padding: 2rem;">❌ ${escapeHtml(error.message)}</p>`;
         }
     }
 
@@ -555,7 +573,7 @@
         const container = document.getElementById('durationAnalysis');
 
         if (!data.available) {
-            container.innerHTML = `<p style="text-align: center; padding: 2rem; color: var(--text-secondary);">${data.message || 'Duration data not available'}</p>`;
+            container.innerHTML = `<p style="text-align: center; padding: 2rem; color: var(--text-secondary);">${escapeHtml(data.message || 'Duration data not available')}</p>`;
             return;
         }
 
@@ -593,9 +611,9 @@
                     <div style="padding: 1.5rem; border-radius: 12px; background: var(--card-bg); border-left: 4px solid var(--${insight.type === 'success' ? 'success' :
                 insight.type === 'warning' ? 'warning' : 'info'
             });">
-                        <div style="font-size: 1.25rem; margin-bottom: 0.5rem; font-weight: 600;">${insight.title}</div>
-                        <p style="margin: 0.5rem 0; color: var(--text-secondary); font-size: 0.95rem;">${insight.message}</p>
-                        <p style="margin: 0.5rem 0; font-weight: 600; color: var(--primary); font-size: 0.9rem;">${insight.recommendation}</p>
+                        <div style="font-size: 1.25rem; margin-bottom: 0.5rem; font-weight: 600;">${escapeHtml(insight.title)}</div>
+                        <p style="margin: 0.5rem 0; color: var(--text-secondary); font-size: 0.95rem;">${escapeHtml(insight.message)}</p>
+                        <p style="margin: 0.5rem 0; font-weight: 600; color: var(--primary); font-size: 0.9rem;">${escapeHtml(insight.recommendation)}</p>
                     </div>
                 `).join('')}
             </div>

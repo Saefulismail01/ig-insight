@@ -2,16 +2,29 @@
 Analysis Routes
 Handle various analysis endpoints
 """
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request, current_app
 import pandas as pd
 from ..services import QualityAnalyzer, OutlierAnalyzer, HashtagCategoryAnalyzer, DurationOptimizer
+from ..services import load_processed_data
 
 analysis_bp = Blueprint('analysis', __name__)
+
+def _get_processed_data_or_400():
+    upload_id = request.args.get('upload_id') or request.headers.get('X-Upload-Id')
+    if not upload_id:
+        return None, (jsonify({'error': 'Missing upload_id. Please upload a CSV file first.'}), 400)
+    data = load_processed_data(current_app.config['UPLOAD_FOLDER'], upload_id)
+    if data is None:
+        return None, (jsonify({'error': 'No data available for this upload_id. Please upload again.'}), 400)
+    return data, None
 
 
 @analysis_bp.route('/test-version')
 def test_version():
     """Test endpoint to check server version"""
+    # Do not expose debug info in production
+    if not current_app.config.get('DEBUG', False):
+        return jsonify({'error': 'Not found'}), 404
     from datetime import datetime
     return jsonify({
         'version': 'v2.1_with_daily_views_and_reach_fix',
@@ -23,12 +36,12 @@ def test_version():
 @analysis_bp.route('/debug-daily-views')
 def debug_daily_views():
     """Debug endpoint to check daily views data"""
-    from .upload import get_processed_data
-    
-    processed_data = get_processed_data()
-    
-    if processed_data is None:
-        return jsonify({'error': 'No data available. Please upload a CSV file first.'}), 400
+    # Do not expose debug info in production
+    if not current_app.config.get('DEBUG', False):
+        return jsonify({'error': 'Not found'}), 404
+    processed_data, err = _get_processed_data_or_400()
+    if err:
+        return err
     
     try:
         all_posts = processed_data.get('all_posts', [])
@@ -74,12 +87,9 @@ def debug_daily_views():
 @analysis_bp.route('/quality-analysis')
 def get_quality_analysis():
     """Get quality analysis"""
-    from .upload import get_processed_data
-    
-    processed_data = get_processed_data()
-    
-    if processed_data is None:
-        return jsonify({'error': 'No data available. Please upload a CSV file first.'}), 400
+    processed_data, err = _get_processed_data_or_400()
+    if err:
+        return err
     
     try:
         all_posts = processed_data.get('all_posts', [])
@@ -101,12 +111,9 @@ def get_quality_analysis():
 @analysis_bp.route('/outlier-analysis')
 def get_outlier_analysis():
     """Get outlier analysis"""
-    from .upload import get_processed_data
-    
-    processed_data = get_processed_data()
-    
-    if processed_data is None:
-        return jsonify({'error': 'No data available. Please upload a CSV file first.'}), 400
+    processed_data, err = _get_processed_data_or_400()
+    if err:
+        return err
     
     try:
         all_posts = processed_data.get('all_posts', [])
@@ -128,12 +135,9 @@ def get_outlier_analysis():
 @analysis_bp.route('/follower-trend')
 def get_follower_trend():
     """Get follower trend analysis"""
-    from .upload import get_processed_data
-    
-    processed_data = get_processed_data()
-    
-    if processed_data is None:
-        return jsonify({'error': 'No data available. Please upload a CSV file first.'}), 400
+    processed_data, err = _get_processed_data_or_400()
+    if err:
+        return err
     
     try:
         all_posts = processed_data.get('all_posts', [])
@@ -319,12 +323,9 @@ def get_follower_trend():
 @analysis_bp.route('/content-type-analysis')
 def get_content_type_analysis():
     """Get content type analysis"""
-    from .upload import get_processed_data
-    
-    processed_data = get_processed_data()
-    
-    if processed_data is None:
-        return jsonify({'error': 'No data available. Please upload a CSV file first.'}), 400
+    processed_data, err = _get_processed_data_or_400()
+    if err:
+        return err
     
     try:
         post_type_performance = processed_data.get('post_type_performance', {})
@@ -359,12 +360,9 @@ def get_content_type_analysis():
 @analysis_bp.route('/category-analysis')
 def get_category_analysis():
     """Get hashtag category analysis (#news, #meme, #insight, #edu)"""
-    from .upload import get_processed_data
-    
-    processed_data = get_processed_data()
-    
-    if processed_data is None:
-        return jsonify({'error': 'No data available. Please upload a CSV file first.'}), 400
+    processed_data, err = _get_processed_data_or_400()
+    if err:
+        return err
     
     try:
         all_posts = processed_data.get('all_posts', [])
@@ -387,12 +385,9 @@ def get_category_analysis():
 @analysis_bp.route('/duration-analysis')
 def get_duration_analysis():
     """Get duration analysis"""
-    from .upload import get_processed_data
-    
-    processed_data = get_processed_data()
-    
-    if processed_data is None:
-        return jsonify({'error': 'No data available. Please upload a CSV file first.'}), 400
+    processed_data, err = _get_processed_data_or_400()
+    if err:
+        return err
     
     try:
         all_posts = processed_data.get('all_posts', [])

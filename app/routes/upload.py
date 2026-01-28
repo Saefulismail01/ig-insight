@@ -2,22 +2,18 @@
 Upload Routes
 Handle file upload and processing
 """
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 import pandas as pd
 import io
-from ..services import DataProcessor
+from ..services import DataProcessor, create_upload_id, save_processed_data
 
 upload_bp = Blueprint('upload', __name__)
-
-# Global variable to store processed data
-processed_data = None
 
 
 @upload_bp.route('/upload', methods=['POST'])
 def upload_file():
     """Upload and process CSV file"""
-    global processed_data
-    
+
     try:
         if 'file' not in request.files:
             return jsonify({'success': False, 'error': 'No file provided'}), 400
@@ -43,13 +39,23 @@ def upload_file():
                 # Process the data
                 processor = DataProcessor()
                 processed_data = processor.process_insight_data(df)
+
+                # Persist per-upload result (multi-user safe vs global variable)
+                upload_id = create_upload_id()
+                save_processed_data(
+                    current_app.config['UPLOAD_FOLDER'],
+                    upload_id,
+                    processed_data
+                )
                 
                 print("Data processed successfully")
                 
                 return jsonify({
                     'success': True,
                     'message': 'File uploaded and processed successfully',
-                    'data': processed_data
+                    'upload_id': upload_id,
+                    # keep returning data for current UI behavior
+                    'data': processed_data,
                 })
                 
             except Exception as e:
@@ -80,8 +86,3 @@ def upload_file():
             'error': f'Server error: {str(e)}',
             'detail': error_detail
         }), 500
-
-
-def get_processed_data():
-    """Get the currently processed data"""
-    return processed_data

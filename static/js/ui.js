@@ -1,5 +1,15 @@
 // UI Helper Functions
 const UI = {
+    escapeHtml(value) {
+        const str = value === null || value === undefined ? '' : String(value);
+        return str
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    },
+
     show(elementId) {
         const element = document.getElementById(elementId);
         if (element) element.classList.remove('hidden');
@@ -12,12 +22,14 @@ const UI = {
 
     showSuccess(message) {
         const status = document.getElementById('uploadStatus');
-        status.innerHTML = `<div class="status-message status-success">✅ ${message}</div>`;
+        const safe = this.escapeHtml(message);
+        status.innerHTML = `<div class="status-message status-success">✅ ${safe}</div>`;
     },
 
     showError(message) {
         const status = document.getElementById('uploadStatus');
-        status.innerHTML = `<div class="status-message status-error">❌ ${message}</div>`;
+        const safe = this.escapeHtml(message);
+        status.innerHTML = `<div class="status-message status-error">❌ ${safe}</div>`;
     },
 
     updateDateRange(dateRange) {
@@ -140,15 +152,15 @@ const UI = {
                 box-shadow: var(--shadow-sm);
             " onmouseover="this.style.borderColor='var(--primary)'; this.style.transform='translateY(-6px)'; this.style.boxShadow='var(--shadow-lg)'"
                onmouseout="this.style.borderColor='var(--border)'; this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow-sm)'">
-                <div style="font-size: 3rem; margin-bottom: 1rem;">${insight.icon}</div>
+                <div style="font-size: 3rem; margin-bottom: 1rem;">${this.escapeHtml(insight.icon)}</div>
                 <div style="font-size: 0.75rem; color: var(--text-tertiary); margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700;">
-                    ${insight.title}
+                    ${this.escapeHtml(insight.title)}
                 </div>
                 <div style="font-size: 2rem; font-weight: 900; margin-bottom: 0.5rem; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
-                    ${insight.value}
+                    ${this.escapeHtml(insight.value)}
                 </div>
                 <div style="font-size: 0.875rem; color: var(--text-secondary); font-weight: 500;">
-                    ${insight.description}
+                    ${this.escapeHtml(insight.description)}
                 </div>
             </div>
         `).join('');

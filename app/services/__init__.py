@@ -7,6 +7,7 @@ from .outlier_analyzer import OutlierAnalyzer
 from .insights_generator import InsightsGenerator
 from .hashtag_category_analyzer import HashtagCategoryAnalyzer
 from .duration_optimizer import DurationOptimizer
+from .upload_store import create_upload_id, save_processed_data, load_processed_data
 
 __all__ = [
     'DataProcessor',
@@ -14,6 +15,9 @@ __all__ = [
     'OutlierAnalyzer',
     'InsightsGenerator',
     'HashtagCategoryAnalyzer',
-    'DurationOptimizer'
+    'DurationOptimizer',
+    'create_upload_id',
+    'save_processed_data',
+    'load_processed_data',
 ]
 

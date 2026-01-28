@@ -15,6 +15,11 @@ def create_app(config_name='default'):
     
     # Load configuration
     app.config.from_object(config[config_name])
+
+    # Validate production config
+    cfg_cls = config.get(config_name)
+    if cfg_cls and hasattr(cfg_cls, "validate"):
+        cfg_cls.validate()
     
     # Ensure upload folder exists
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)

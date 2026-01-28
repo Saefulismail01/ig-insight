@@ -14,7 +14,8 @@ class Config:
     DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
     
     # Upload settings
-    UPLOAD_FOLDER = 'uploads'
+    # Use absolute path to avoid cwd differences (Windows/Linux/serverless)
+    UPLOAD_FOLDER = os.path.abspath(os.getenv('UPLOAD_FOLDER', 'uploads'))
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max file size
     ALLOWED_EXTENSIONS = {'csv'}
     
@@ -36,6 +37,12 @@ class DevelopmentConfig(Config):
 class ProductionConfig(Config):
     """Production configuration"""
     DEBUG = False
+
+    @classmethod
+    def validate(cls):
+        # Enforce strong/explicit SECRET_KEY in production
+        if not cls.SECRET_KEY or cls.SECRET_KEY == 'dev-secret-key-change-in-production':
+            raise RuntimeError("SECRET_KEY must be set for production")
 
 
 # Configuration dictionary

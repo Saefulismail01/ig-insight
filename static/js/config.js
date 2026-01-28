@@ -59,6 +59,7 @@ const CONFIG = {
 // Global state
 const STATE = {
     dashboardData: null,
+    uploadId: null,
     charts: {},
     currentPage: 1
 };
