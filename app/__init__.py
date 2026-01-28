@@ -22,7 +22,13 @@ def create_app(config_name='default'):
         cfg_cls.validate()
     
     # Ensure upload folder exists
-    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+    try:
+        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+        print(f"📁 Storage initialized at: {app.config['UPLOAD_FOLDER']}")
+    except OSError as e:
+        print(f"⚠️ Warning: Could not create upload folder: {e}")
+        # In some serverless cases, the dir might already exist in /tmp
+        # or we might only be able to create it at runtime.
     
     # Register blueprints
     app.register_blueprint(upload_bp)

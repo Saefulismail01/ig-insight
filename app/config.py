@@ -13,9 +13,19 @@ class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
     DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
     
+    # Environment Detection
+    IS_VERCEL = 'VERCEL' in os.environ
+    IS_AWS = 'AWS_LAMBDA_FUNCTION_NAME' in os.environ
+    IS_CLOUD = os.getenv('ENV_TYPE') == 'cloud' or IS_VERCEL or IS_AWS
+
     # Upload settings
-    # Use absolute path to avoid cwd differences (Windows/Linux/serverless)
-    UPLOAD_FOLDER = os.path.abspath(os.getenv('UPLOAD_FOLDER', 'uploads'))
+    # Use /tmp for serverless/cloud environments where root is read-only
+    if IS_CLOUD:
+        UPLOAD_FOLDER = os.path.join('/tmp', 'uploads')
+        print(f"☁️ Cloud environment detected. Using ephemeral storage: {UPLOAD_FOLDER}")
+    else:
+        UPLOAD_FOLDER = os.path.abspath(os.getenv('UPLOAD_FOLDER', 'uploads'))
+    
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max file size
     ALLOWED_EXTENSIONS = {'csv'}
     
