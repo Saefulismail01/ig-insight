@@ -87,7 +87,7 @@ class QualityAnalyzer:
                     post_dict['Publish time'] = post_dict['Publish time'].strftime('%Y-%m-%d %H:%M:%S')
                 
                 description = str(post_dict.get('Description', post_dict.get('Caption', '')))
-                post_dict['short_description'] = description[:50] + '...' if len(description) > 50 else description
+                post_dict['short_description'] = description[:40] + '...' if len(description) > 50 else description
                 
                 content_url = (post_dict.get('URL') or post_dict.get('Link') or 
                               post_dict.get('Content URL') or post_dict.get('permalink') or '')
@@ -106,12 +106,12 @@ class QualityAnalyzer:
                 'total_posts_analyzed': len(df_with_scores),
                 'overall_avg_score': float(df_with_scores['Content_Quality_Score'].mean().round(2)),
                 'all_posts': serialize_data(all_posts_data),
-                'quality_insights': [
+                'quality_insights': [insight for insight in [
                     f"Total {tier_counts.get('Excellent', 0)} posts ({tier_percentages.get('Excellent', 0)}%) dengan ER Excellent (Top 10%)",
                     f"Total {tier_counts.get('Low', 0)} posts ({tier_percentages.get('Low', 0)}%) dengan ER Low (Bottom 30%)",
                     f"Rata-rata Engagement Rate: {df_with_scores['Engagement_Rate'].mean().round(2):.2f}%",
                     fallback_note
-                ]
+                ] if insight]
             }
             
         except Exception as e:

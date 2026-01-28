@@ -33,7 +33,18 @@ const API = {
 
     async getFollowerTrend() {
         const response = await fetch('/follower-trend');
-        return await response.json();
+        const data = await response.json();
+        console.log('🔍 Follower Trend API Response:', data);
+        
+        // Fallback: if daily_views is missing, use daily_follows as placeholder
+        if (!data.daily_views && data.daily_follows) {
+            console.warn('⚠️ daily_views missing! Server needs restart. Using daily_follows as fallback.');
+            data.daily_views = data.daily_follows.map(() => 0);
+        }
+        
+        console.log('📊 Daily Views:', data.daily_views);
+        console.log('👥 Cumulative Followers:', data.cumulative_followers);
+        return data;
     },
 
     async getCategoryAnalysis() {
@@ -46,18 +57,4 @@ const API = {
         return await response.json();
     },
 
-    async sendChatMessage(message, history) {
-        const response = await fetch('/ai-chat', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                message: message,
-                conversation_history: history
-            })
-        });
-
-        return await response.json();
-    }
 };

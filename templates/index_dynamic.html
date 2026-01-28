@@ -1,27 +1,36 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Instagram Analytics Dashboard - Modern UI</title>
-    
+
+    <!-- Prevent Caching -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
     <!-- Favicon -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
-    
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
+
     <!-- CSS Files -->
     <link rel="stylesheet" href="/static/css/main.css">
     <link rel="stylesheet" href="/static/css/components.css">
-    <link rel="stylesheet" href="/static/css/chat.css">
     <link rel="stylesheet" href="/static/css/navbar.css">
-    
+
     <!-- Chart.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script
+        src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.1.0/dist/chartjs-plugin-annotation.min.js"></script>
 </head>
+
 <body>
     <div class="container">
         <!-- Header -->
-        <header>
-            <div class="header-content">
+        <header id="mainHeader">
+            <div class="header-content" id="headerContent">
                 <div class="header-title">
                     <div class="logo">📊</div>
                     <div>
@@ -29,54 +38,49 @@
                         <p class="subtitle" id="dateRange">Upload your CSV file to get started</p>
                     </div>
                 </div>
-                <div id="downloadSection" class="hidden">
-                    <button id="downloadPdfBtn" class="btn btn-primary">
-                        <span>📄</span>
-                        Download Report
-                    </button>
-                </div>
             </div>
-            
-            <!-- Navigation Navbar -->
-            <nav class="analysis-navbar hidden" id="analysisNavbar">
-                <div class="navbar-content">
-                    <div class="navbar-title">📈 Analysis Sections</div>
-                    <div class="navbar-links">
-                        <a href="#kpiGrid" class="nav-link" data-section="kpi">
-                            <span class="nav-icon">🎯</span>
-                            <span class="nav-text">KPI Overview</span>
-                        </a>
-                        <a href="#engagementCharts" class="nav-link" data-section="engagement">
-                            <span class="nav-icon">📊</span>
-                            <span class="nav-text">Engagement</span>
-                        </a>
-                        <a href="#contentTypeAnalysis" class="nav-link" data-section="content">
-                            <span class="nav-icon">📱</span>
-                            <span class="nav-text">Content Types</span>
-                        </a>
-                        <a href="#outlierAnalysis" class="nav-link" data-section="outliers">
-                            <span class="nav-icon">🎯</span>
-                            <span class="nav-text">Top Performers</span>
-                        </a>
-                        <a href="#qualityAnalysis" class="nav-link" data-section="quality">
-                            <span class="nav-icon">⭐</span>
-                            <span class="nav-text">Quality Score</span>
-                        </a>
-                        <a href="#captionAnalysis" class="nav-link" data-section="captions">
-                            <span class="nav-icon">🏷️</span>
-                            <span class="nav-text">Captions</span>
-                        </a>
-                        <a href="#durationAnalysis" class="nav-link" data-section="duration">
-                            <span class="nav-icon">⏱️</span>
-                            <span class="nav-text">Video Duration</span>
-                        </a>
-                    </div>
-                    <button class="navbar-toggle" id="navbarToggle">
-                        <span>☰</span>
-                    </button>
-                </div>
-            </nav>
+
         </header>
+
+        <!-- Navigation Navbar -->
+        <nav class="analysis-navbar hidden" id="analysisNavbar">
+            <div class="navbar-content">
+                <div class="navbar-title">📈 Analysis Sections</div>
+                <div class="navbar-links">
+                    <a href="#kpiGrid" class="nav-link" data-section="kpi">
+                        <span class="nav-icon">🎯</span>
+                        <span class="nav-text">KPI Overview</span>
+                    </a>
+                    <a href="#engagementCharts" class="nav-link" data-section="engagement">
+                        <span class="nav-icon">📊</span>
+                        <span class="nav-text">Engagement</span>
+                    </a>
+                    <a href="#contentTypeAnalysis" class="nav-link" data-section="content">
+                        <span class="nav-icon">📱</span>
+                        <span class="nav-text">Content Types</span>
+                    </a>
+                    <a href="#outlierAnalysis" class="nav-link" data-section="outliers">
+                        <span class="nav-icon">🎯</span>
+                        <span class="nav-text">Top Performers</span>
+                    </a>
+                    <a href="#qualityAnalysis" class="nav-link" data-section="quality">
+                        <span class="nav-icon">⭐</span>
+                        <span class="nav-text">Quality Score</span>
+                    </a>
+                    <a href="#captionAnalysis" class="nav-link" data-section="captions">
+                        <span class="nav-icon">🏷️</span>
+                        <span class="nav-text">Captions</span>
+                    </a>
+                    <a href="#durationAnalysis" class="nav-link" data-section="duration">
+                        <span class="nav-icon">⏱️</span>
+                        <span class="nav-text">Video Duration</span>
+                    </a>
+                </div>
+                <button class="navbar-toggle" id="navbarToggle">
+                    <span>☰</span>
+                </button>
+            </div>
+        </nav>
 
         <!-- Upload Section -->
         <section id="uploadSection" class="upload-section">
@@ -94,14 +98,14 @@
                         </p>
                     </label>
                 </div>
-                
+
                 <div id="loadingIndicator" class="hidden" style="margin-top: 2.5rem; text-align: center;">
                     <div class="loading-spinner" style="margin: 0 auto"></div>
                     <p style="margin-top: 1.5rem; color: var(--text-secondary); font-weight: 500;">
                         Processing your data...
                     </p>
                 </div>
-                
+
                 <div id="uploadStatus"></div>
             </div>
         </section>
@@ -119,7 +123,7 @@
                         <canvas id="engagementChart"></canvas>
                     </div>
                 </div>
-                
+
                 <div class="card">
                     <h3>⏰ Optimal Posting Hours</h3>
                     <div class="chart-container">
@@ -167,14 +171,14 @@
     </div>
 
     <!-- Chat Widget will be injected by JS -->
-    
+
     <!-- JavaScript Files -->
     <script src="/static/js/config.js"></script>
     <script src="/static/js/api.js"></script>
     <script src="/static/js/charts.js"></script>
     <script src="/static/js/ui.js"></script>
-    <script src="/static/js/chat.js"></script>
     <script src="/static/js/navbar.js"></script>
     <script src="/static/js/main.js"></script>
 </body>
+
 </html>

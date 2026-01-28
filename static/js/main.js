@@ -8,9 +8,6 @@
     function init() {
         console.log('📊 Instagram Analytics Dashboard Initialized');
 
-        // Initialize chat widget
-        Chat.init();
-
         // Setup file upload
         setupFileUpload();
 
@@ -87,10 +84,10 @@
     function showDashboard() {
         UI.hide('uploadSection');
         UI.show('dashboardContent');
-        UI.show('downloadSection');
 
-        // Show navigation bar
-        document.getElementById('analysisNavbar').classList.remove('hidden');
+        // Hide header and show navigation bar
+        UI.hide('mainHeader');
+        UI.show('analysisNavbar');
 
         // Update UI with data
         UI.updateDateRange(STATE.dashboardData.date_range);
@@ -210,6 +207,7 @@
     function renderPosts(posts) {
         return posts.map((post, idx) => {
             const postType = post['Post type'] || '';
+            const postUrl = post.Permalink || post.URL || post.Link || '';
 
             // Detect category from description
             const desc = (post.Description || '').toLowerCase();
@@ -219,8 +217,12 @@
             else if (desc.includes('#insight')) { category = '#insight'; }
             else if (desc.includes('#edu')) { category = '#edu'; }
 
+            const cardStyle = postUrl ? 'cursor: pointer;' : '';
+            // Escape URL for HTML attribute
+            const safeUrl = postUrl ? postUrl.replace(/"/g, '&quot;').replace(/'/g, '&#39;') : '';
+
             return `
-                <div class="post-card">
+                <div class="post-card" style="${cardStyle}" data-url="${safeUrl}" title="${postUrl ? 'Klik untuk membuka postingan' : ''}">
                     <div class="post-rank">${idx + 1}</div>
                     <div class="post-details">
                         <div class="post-title">${post.short_description || 'No description'}</div>
@@ -238,6 +240,14 @@
             `;
         }).join('');
     }
+
+    // Add click handler for post cards
+    document.addEventListener('click', function (e) {
+        const card = e.target.closest('.post-card');
+        if (card && card.dataset.url) {
+            window.open(card.dataset.url, '_blank');
+        }
+    });
 
     async function loadQualityAnalysis() {
         const container = document.getElementById('qualityAnalysis');
@@ -280,9 +290,11 @@
                 </ul>
             </div>
             
-            <div style="margin-top: 2rem;">
-                <h4 style="margin-bottom: 1rem;">📈 Follower Trend</h4>
-                <div class="chart-container" style="height: 400px;">
+            <div style="margin-top: 3rem; border-top: 1px solid var(--border); padding-top: 2rem;">
+                <h4 style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                    📈 Follower Growth Analysis
+                </h4>
+                <div class="chart-container" style="height: 450px; background: white; border-radius: 16px; padding: 1.5rem; border: 1px solid var(--border);">
                     <canvas id="followerTrendChart"></canvas>
                 </div>
             </div>
@@ -299,6 +311,12 @@
 
             if (data.dates && data.dates.length > 0) {
                 Charts.create.followerTrend(data, 'followerTrendChart');
+
+                // Update insight layer
+                const insightEl = document.getElementById('followerTrendInsight');
+                if (insightEl && data.summary_insight) {
+                    insightEl.innerHTML = `💡 ${data.summary_insight}`;
+                }
             }
         } catch (error) {
             console.error('Error loading follower trend:', error);
@@ -427,7 +445,7 @@
             <!-- Sweet Spot Highlight -->
             <div style="text-align: center; padding: 2rem; background: linear-gradient(135deg, var(--primary-light) 0%, var(--card-bg) 100%); border-radius: 12px; margin-bottom: 2rem;">
                 <div style="font-size: 3rem; margin-bottom: 0.5rem;">🎯</div>
-                <h3 style="margin: 0 0 1rem 0; color: var(--primary);">Sweet Spot Detected!</h3>
+                <h3 style="margin: 0 0 1rem 0; color: var(--primary); display: block;">Sweet Spot Detected!</h3>
                 <div style="font-size: 2.5rem; font-weight: 700; color: var(--primary); margin-bottom: 0.5rem;">
                     ${sweet.range_start}-${sweet.range_end} seconds
                 </div>

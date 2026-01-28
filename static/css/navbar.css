@@ -3,7 +3,7 @@
 .analysis-navbar {
     background: var(--bg-card);
     border-bottom: 1px solid var(--border);
-    padding: 1rem 0;
+    padding: 1rem;
     position: fixed;
     top: 0;
     left: 0;

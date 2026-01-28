@@ -4,7 +4,7 @@ Flask Application Factory
 from flask import Flask, render_template
 import os
 from .config import config
-from .routes import upload_bp, data_bp, analysis_bp, ai_bp
+from .routes import upload_bp, data_bp, analysis_bp
 
 
 def create_app(config_name='default'):
@@ -23,7 +23,6 @@ def create_app(config_name='default'):
     app.register_blueprint(upload_bp)
     app.register_blueprint(data_bp)
     app.register_blueprint(analysis_bp)
-    app.register_blueprint(ai_bp)
     
     # Root route
     @app.route('/')

@@ -39,7 +39,7 @@ const Charts = {
         hourly(data) {
             const ctx = document.getElementById('hourlyChart').getContext('2d');
             const hourlyData = data.hourly_performance;
-            
+
             const hours = Object.keys(hourlyData.Engagement_Rate || {}).map(h => `${h}:00`);
             const values = Object.values(hourlyData.Engagement_Rate || {});
 
@@ -140,7 +140,7 @@ const Charts = {
                             ...CONFIG.CHART_OPTIONS.scales.y,
                             ticks: {
                                 ...CONFIG.CHART_OPTIONS.scales.y.ticks,
-                                callback: function(value) {
+                                callback: function (value) {
                                     return value.toLocaleString('id-ID');
                                 }
                             }
@@ -195,40 +195,85 @@ const Charts = {
         followerTrend(data, canvasId) {
             const ctx = document.getElementById(canvasId).getContext('2d');
 
+            // Find growth phases if provided
+            const annotations = {};
+
+            // 1. Strategy Change Annotation
+            if (data.strategy_change_date) {
+                annotations.strategyLine = {
+                    type: 'line',
+                    mode: 'vertical',
+                    scaleID: 'x',
+                    value: data.strategy_change_date,
+                    borderColor: '#6366f1',
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    label: {
+                        display: true,
+                        content: 'Content Strategy Change',
+                        position: 'start',
+                        backgroundColor: 'rgba(99, 102, 241, 0.9)',
+                        color: '#fff',
+                        font: { size: 11, weight: 'bold' },
+                        padding: 6,
+                        yAdjust: -20
+                    }
+                };
+            }
+
+            // 2. Growth Phase Annotations (Box highlights)
+            if (data.phases) {
+                data.phases.forEach((phase, index) => {
+                    annotations[`phaseBox${index}`] = {
+                        type: 'box',
+                        xMin: phase.start_date,
+                        xMax: phase.end_date,
+                        backgroundColor: phase.color,
+                        borderWidth: 0,
+                        drawTime: 'beforeDatasetsDraw',
+                        label: {
+                            display: true,
+                            content: phase.name,
+                            position: { x: 'center', y: 'start' },
+                            color: 'rgba(71, 85, 105, 0.8)',
+                            font: { size: 10, weight: 'bold', style: 'italic' },
+                            yAdjust: 10
+                        }
+                    };
+                });
+            }
+
             return new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: data.dates,
                     datasets: [
                         {
-                            label: 'Cumulative Followers',
+                            label: '👥 Cumulative Followers',
                             data: data.cumulative_followers,
-                            borderColor: CONFIG.CHART_COLORS.primary,
-                            backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                            borderColor: '#6366f1',
+                            backgroundColor: 'rgba(99, 102, 241, 0.35)', // 35% opacity as requested
                             borderWidth: 3,
                             fill: true,
-                            tension: 0.4,
+                            tension: 0.3,
                             yAxisID: 'y',
-                            pointRadius: 3,
+                            pointRadius: 0, // Cleaner look, emphasis on trend
                             pointHoverRadius: 6,
-                            pointBackgroundColor: CONFIG.CHART_COLORS.primary,
-                            pointBorderColor: '#fff',
-                            pointBorderWidth: 2
+                            zIndex: 10
                         },
                         {
-                            label: 'Daily Follows',
-                            data: data.daily_follows,
-                            borderColor: CONFIG.CHART_COLORS.success,
-                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                            borderWidth: 3,
+                            label: '👁️ Daily Views (Secondary)',
+                            data: data.daily_views,
+                            borderColor: '#f59e0b', // Specific orange/amber color for visibility
+                            backgroundColor: 'transparent',
+                            borderWidth: 2, // Slightly thicker
+                            borderDash: [5, 5],
                             fill: false,
                             tension: 0.4,
                             yAxisID: 'y1',
-                            pointRadius: 3,
-                            pointHoverRadius: 6,
-                            pointBackgroundColor: CONFIG.CHART_COLORS.success,
-                            pointBorderColor: '#fff',
-                            pointBorderWidth: 2
+                            pointRadius: 2, // Re-enable small points for better tracking
+                            pointHoverRadius: 5,
+                            zIndex: 20 // Bring to very front
                         }
                     ]
                 },
@@ -246,13 +291,27 @@ const Charts = {
                             labels: {
                                 usePointStyle: true,
                                 padding: 15,
-                                font: {
-                                    family: 'Inter',
-                                    size: 12,
-                                    weight: '600'
-                                },
-                                color: '#cbd5e1'
+                                font: { family: 'Inter', size: 11, weight: '600' },
+                                color: '#475569'
                             }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(255, 255, 255, 0.98)',
+                            titleColor: '#0f172a',
+                            bodyColor: '#475569',
+                            borderColor: '#e2e8f0',
+                            borderWidth: 1,
+                            padding: 12,
+                            boxPadding: 4,
+                            usePointStyle: true,
+                            callbacks: {
+                                label: function (context) {
+                                    return ` ${context.dataset.label.split(' (')[0]}: ${context.parsed.y.toLocaleString('id-ID')}`;
+                                }
+                            }
+                        },
+                        annotation: {
+                            annotations: annotations
                         }
                     },
                     scales: {
@@ -260,20 +319,18 @@ const Charts = {
                             type: 'linear',
                             display: true,
                             position: 'left',
-                            beginAtZero: true,
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.05)'
-                            },
+                            beginAtZero: false,
+                            grid: { color: 'rgba(0, 0, 0, 0.03)', drawBorder: false },
                             ticks: {
-                                color: '#94a3b8',
-                                callback: function(value) {
-                                    return value >= 1000 ? (value/1000).toFixed(1) + 'k' : value.toLocaleString();
-                                }
+                                color: '#64748b',
+                                font: { size: 10, weight: '600' },
+                                callback: value => value >= 1000 ? (value / 1000).toFixed(1) + 'k' : value
                             },
                             title: {
                                 display: true,
-                                text: 'Cumulative',
-                                color: '#cbd5e1'
+                                text: 'Total Followers',
+                                color: '#6366f1',
+                                font: { weight: '700', size: 11 }
                             }
                         },
                         y1: {
@@ -281,29 +338,27 @@ const Charts = {
                             display: true,
                             position: 'right',
                             beginAtZero: true,
-                            grid: {
-                                drawOnChartArea: false
-                            },
+                            grid: { drawOnChartArea: false, drawBorder: false },
                             ticks: {
                                 color: '#94a3b8',
-                                callback: function(value) {
-                                    return value >= 1000 ? (value/1000).toFixed(1) + 'k' : value.toLocaleString();
-                                }
+                                font: { size: 10 },
+                                callback: value => value >= 1000 ? (value / 1000).toFixed(1) + 'k' : value
                             },
                             title: {
                                 display: true,
-                                text: 'Daily',
-                                color: '#cbd5e1'
+                                text: 'Daily Views',
+                                color: '#94a3b8',
+                                font: { weight: '700', size: 11 }
                             }
                         },
                         x: {
-                            grid: {
-                                display: false
-                            },
+                            grid: { display: false },
                             ticks: {
                                 color: '#94a3b8',
-                                maxRotation: 45,
-                                minRotation: 0
+                                maxRotation: 0,
+                                autoSkip: true,
+                                maxTicksLimit: 8, // Reduced density as requested
+                                font: { size: 10 }
                             }
                         }
                     }

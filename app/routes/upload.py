@@ -30,11 +30,15 @@ def upload_file():
             try:
                 print(f"Processing file: {file.filename}")
                 
-                # Read CSV file
-                stream = io.StringIO(file.stream.read().decode("utf-8"), newline=None)
-                df = pd.read_csv(stream)
+                # Read CSV file with proper settings for quoted fields and BOM
+                # Use utf-8-sig to handle BOM (Byte Order Mark)
+                file_content = file.stream.read().decode("utf-8-sig")
+                stream = io.StringIO(file_content, newline=None)
+                df = pd.read_csv(stream, quotechar='"', escapechar='\\')
                 
                 print(f"CSV loaded successfully. Shape: {df.shape}")
+                print(f"Columns: {df.columns.tolist()}")
+                print(f"First row Views: {df['Views'].iloc[0] if 'Views' in df.columns else 'Views column not found'}")
                 
                 # Process the data
                 processor = DataProcessor()

@@ -89,7 +89,7 @@ class OutlierAnalyzer:
                 post_dict['Publish time'] = post_dict['Publish time'].strftime('%Y-%m-%d %H:%M:%S')
             
             description = str(post_dict.get('Description', post_dict.get('Caption', '')))
-            post_dict['short_description'] = description[:50] + '...' if len(description) > 50 else description
+            post_dict['short_description'] = description[:40] + '...' if len(description) > 50 else description
             
             content_url = (post_dict.get('URL') or post_dict.get('Link') or 
                           post_dict.get('Content URL') or post_dict.get('permalink') or '')
