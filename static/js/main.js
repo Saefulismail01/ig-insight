@@ -75,7 +75,7 @@
 
         drawdownToggle.addEventListener('click', () => {
             const isCollapsed = dashboardContent.classList.contains('collapsed');
-            
+
             if (isCollapsed) {
                 // Expand content
                 dashboardContent.classList.remove('collapsed');
@@ -295,19 +295,6 @@
         Charts.create.contentType(data.content_type_performance, 'ctCommentsChart', 'Comments');
     }
 
-    async function loadOutlierAnalysis() {
-        const container = document.getElementById('outlierAnalysis');
-        container.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--text-secondary);">Loading outlier analysis...</p>';
-
-        try {
-            const data = await API.getOutlierAnalysis();
-            if (data.error) throw new Error(data.error);
-
-            renderOutlierAnalysis(data);
-        } catch (error) {
-            container.innerHTML = `<p style="color: var(--danger); text-align: center; padding: 2rem;">❌ ${escapeHtml(error.message)}</p>`;
-        }
-    }
 
     function renderOutlierAnalysis(data) {
         const container = document.getElementById('outlierAnalysis');
@@ -380,27 +367,6 @@
         }).join('');
     }
 
-    // Add click handler for post cards
-    document.addEventListener('click', function (e) {
-        const card = e.target.closest('.post-card');
-        if (card && card.dataset.url) {
-            window.open(card.dataset.url, '_blank');
-        }
-    });
-
-    async function loadQualityAnalysis() {
-        const container = document.getElementById('qualityAnalysis');
-        container.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--text-secondary);">Loading quality analysis...</p>';
-
-        try {
-            const data = await API.getQualityAnalysis();
-            if (data.error) throw new Error(data.error);
-
-            renderQualityAnalysis(data);
-        } catch (error) {
-            container.innerHTML = `<p style="color: var(--danger); text-align: center; padding: 2rem;">❌ ${escapeHtml(error.message)}</p>`;
-        }
-    }
 
     function renderQualityAnalysis(data) {
         const container = document.getElementById('qualityAnalysis');
@@ -424,9 +390,14 @@
             
             <div class="quality-insights">
                 <h4>💡 Quality Insights</h4>
-                <ul>
-                    ${data.quality_insights.map(insight => `<li>${escapeHtml(insight)}</li>`).join('')}
-                </ul>
+                <div id="qualityInsightsList" style="text-align: left; max-width: 600px; margin: 0 auto;">
+                    ${data.quality_insights.map(insight => `
+                        <div style="margin-bottom: 0.75rem; display: flex; gap: 0.75rem;">
+                            <span>✨</span>
+                            <span>${escapeHtml(insight)}</span>
+                        </div>
+                    `).join('')}
+                </div>
             </div>
             
             <div style="margin-top: 3rem; border-top: 1px solid var(--border); padding-top: 2rem;">
@@ -441,39 +412,6 @@
 
         // Load follower trend
         loadFollowerTrend();
-    }
-
-    async function loadFollowerTrend() {
-        try {
-            const data = await API.getFollowerTrend();
-            if (data.error) throw new Error(data.error);
-
-            if (data.dates && data.dates.length > 0) {
-                Charts.create.followerTrend(data, 'followerTrendChart');
-
-                // Update insight layer
-                const insightEl = document.getElementById('followerTrendInsight');
-                if (insightEl && data.summary_insight) {
-                    insightEl.textContent = `💡 ${data.summary_insight}`;
-                }
-            }
-        } catch (error) {
-            console.error('Error loading follower trend:', error);
-        }
-    }
-
-    async function loadCategoryAnalysis() {
-        const container = document.getElementById('captionAnalysis');
-        container.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--text-secondary);">Loading category analysis...</p>';
-
-        try {
-            const data = await API.getCategoryAnalysis();
-            if (data.error) throw new Error(data.error);
-
-            renderCategoryAnalysis(data);
-        } catch (error) {
-            container.innerHTML = `<p style="color: var(--danger); text-align: center; padding: 2rem;">❌ ${escapeHtml(error.message)}</p>`;
-        }
     }
 
     function renderCategoryAnalysis(data) {
@@ -555,19 +493,6 @@
         `;
     }
 
-    async function loadDurationAnalysis() {
-        const container = document.getElementById('durationAnalysis');
-        container.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--text-secondary);">Loading duration analysis...</p>';
-
-        try {
-            const data = await API.getDurationAnalysis();
-            if (data.error) throw new Error(data.error);
-
-            renderDurationAnalysis(data);
-        } catch (error) {
-            container.innerHTML = `<p style="color: var(--danger); text-align: center; padding: 2rem;">❌ ${escapeHtml(error.message)}</p>`;
-        }
-    }
 
     function renderDurationAnalysis(data) {
         const container = document.getElementById('durationAnalysis');
