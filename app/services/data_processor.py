@@ -338,6 +338,11 @@ class DataProcessor:
     
     def _analyze_weekly_trends(self, df):
         """Analyze weekly trends"""
+        weekly_trends = df.groupby('Publish_Week').agg({
+            'Views': 'mean',
+            'Engagement_Rate': 'mean',
+            'Virality_Score': 'mean'
+        }).reset_index()
         weekly_trends['Publish_Week'] = weekly_trends['Publish_Week'].dt.start_time.dt.strftime('%Y-%m-%d')
         return weekly_trends.to_dict('records')
 
