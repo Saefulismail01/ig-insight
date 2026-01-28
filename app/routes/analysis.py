@@ -4,7 +4,7 @@ Handle various analysis endpoints
 """
 from flask import Blueprint, jsonify
 import pandas as pd
-from ..services import QualityAnalyzer, OutlierAnalyzer, CaptionAnalyzer, DurationOptimizer
+from ..services import QualityAnalyzer, OutlierAnalyzer, HashtagCategoryAnalyzer, DurationOptimizer
 
 analysis_bp = Blueprint('analysis', __name__)
 
@@ -163,9 +163,9 @@ def get_content_type_analysis():
         return jsonify({'error': str(e)}), 500
 
 
-@analysis_bp.route('/caption-analysis')
-def get_caption_analysis():
-    """Get caption analysis"""
+@analysis_bp.route('/category-analysis')
+def get_category_analysis():
+    """Get hashtag category analysis (#news, #meme, #insight, #edu)"""
     from .upload import get_processed_data
     
     processed_data = get_processed_data()
@@ -176,18 +176,18 @@ def get_caption_analysis():
     try:
         all_posts = processed_data.get('all_posts', [])
         if not all_posts:
-            return jsonify({'error': 'No post data available for caption analysis.'}), 400
+            return jsonify({'error': 'No post data available for category analysis.'}), 400
         
         df = pd.DataFrame(all_posts)
         df['Publish time'] = pd.to_datetime(df['Publish time'])
         
-        analyzer = CaptionAnalyzer()
-        caption_data = analyzer.perform_caption_analysis(df)
+        analyzer = HashtagCategoryAnalyzer()
+        category_data = analyzer.perform_category_analysis(df)
         
-        return jsonify(caption_data)
+        return jsonify(category_data)
         
     except Exception as e:
-        print(f"Error in get_caption_analysis: {str(e)}")
+        print(f"Error in get_category_analysis: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 

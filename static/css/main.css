@@ -177,6 +177,7 @@ h1 {
     position: relative;
     overflow: hidden;
     box-shadow: var(--shadow-sm);
+    margin-bottom: 2rem;
 }
 
 .card::before {

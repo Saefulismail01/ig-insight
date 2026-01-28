@@ -5,7 +5,7 @@ from .data_processor import DataProcessor
 from .quality_analyzer import QualityAnalyzer
 from .outlier_analyzer import OutlierAnalyzer
 from .insights_generator import InsightsGenerator
-from .caption_analyzer import CaptionAnalyzer
+from .hashtag_category_analyzer import HashtagCategoryAnalyzer
 from .duration_optimizer import DurationOptimizer
 
 __all__ = [
@@ -13,6 +13,7 @@ __all__ = [
     'QualityAnalyzer',
     'OutlierAnalyzer',
     'InsightsGenerator',
-    'CaptionAnalyzer',
+    'HashtagCategoryAnalyzer',
     'DurationOptimizer'
 ]
+

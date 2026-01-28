@@ -1,5 +1,5 @@
 // Main Application
-(function() {
+(function () {
     'use strict';
 
     // Initialize when DOM is loaded
@@ -7,13 +7,13 @@
 
     function init() {
         console.log('📊 Instagram Analytics Dashboard Initialized');
-        
+
         // Initialize chat widget
         Chat.init();
-        
+
         // Setup file upload
         setupFileUpload();
-        
+
         // Setup drag and drop
         setupDragDrop();
     }
@@ -25,7 +25,7 @@
 
     function setupDragDrop() {
         const uploadArea = document.getElementById('uploadArea');
-        
+
         uploadArea.addEventListener('dragover', (e) => {
             e.preventDefault();
             uploadArea.classList.add('dragover');
@@ -88,37 +88,37 @@
         UI.hide('uploadSection');
         UI.show('dashboardContent');
         UI.show('downloadSection');
-        
+
         // Show navigation bar
         document.getElementById('analysisNavbar').classList.remove('hidden');
-        
+
         // Update UI with data
         UI.updateDateRange(STATE.dashboardData.date_range);
         UI.createKPICards(STATE.dashboardData);
-        
+
         // Create main charts
         Charts.create.engagement(STATE.dashboardData.post_type_performance);
         Charts.create.hourly(STATE.dashboardData.optimal_posting_time);
-        
+
         // Render advanced analytics
         UI.renderAdvancedAnalytics(STATE.dashboardData);
-        
+
         // Load additional analysis
         loadContentTypeAnalysis();
         loadOutlierAnalysis();
         loadQualityAnalysis();
-        loadCaptionAnalysis();
+        loadCategoryAnalysis();
         loadDurationAnalysis();
     }
 
     async function loadContentTypeAnalysis() {
         const container = document.getElementById('contentTypeAnalysis');
         container.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--text-secondary);">Loading content type analysis...</p>';
-        
+
         try {
             const data = await API.getContentTypeAnalysis();
             if (data.error) throw new Error(data.error);
-            
+
             renderContentTypeAnalysis(data);
         } catch (error) {
             container.innerHTML = `<p style="color: var(--danger); text-align: center; padding: 2rem;">❌ ${error.message}</p>`;
@@ -128,7 +128,7 @@
     function renderContentTypeAnalysis(data) {
         const container = document.getElementById('contentTypeAnalysis');
         const contentTypes = Object.keys(data.content_type_performance || {});
-        
+
         if (contentTypes.length === 0) {
             container.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--text-secondary);">No content type data available</p>';
             return;
@@ -161,11 +161,11 @@
     async function loadOutlierAnalysis() {
         const container = document.getElementById('outlierAnalysis');
         container.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--text-secondary);">Loading outlier analysis...</p>';
-        
+
         try {
             const data = await API.getOutlierAnalysis();
             if (data.error) throw new Error(data.error);
-            
+
             renderOutlierAnalysis(data);
         } catch (error) {
             container.innerHTML = `<p style="color: var(--danger); text-align: center; padding: 2rem;">❌ ${error.message}</p>`;
@@ -174,7 +174,7 @@
 
     function renderOutlierAnalysis(data) {
         const container = document.getElementById('outlierAnalysis');
-        
+
         container.innerHTML = `
             <div class="engagement-gap">
                 <h4>🔥 Key Insights</h4>
@@ -209,19 +209,26 @@
 
     function renderPosts(posts) {
         return posts.map((post, idx) => {
-            const postType = post['Post type'] || 'Unknown';
-            const badgeClass = postType.toLowerCase().includes('reel') ? 'badge-reel' : 
-                              postType.toLowerCase().includes('carousel') ? 'badge-carousel' : 'badge-image';
-            
+            const postType = post['Post type'] || '';
+
+            // Detect category from description
+            const desc = (post.Description || '').toLowerCase();
+            let category = '';
+            if (desc.includes('#news')) { category = '#news'; }
+            else if (desc.includes('#meme')) { category = '#meme'; }
+            else if (desc.includes('#insight')) { category = '#insight'; }
+            else if (desc.includes('#edu')) { category = '#edu'; }
+
             return `
                 <div class="post-card">
                     <div class="post-rank">${idx + 1}</div>
                     <div class="post-details">
-                        <div class="post-title">
-                            ${post.short_description || 'No description'}
-                            ${postType !== 'Unknown' ? `<span class="badge ${badgeClass}">${postType}</span>` : ''}
+                        <div class="post-title">${post.short_description || 'No description'}</div>
+                        <div class="post-meta" style="display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem; color: var(--text-secondary); font-size: 0.85rem;">
+                            <span>${new Date(post.Posted || post['Publish time']).toLocaleDateString('id-ID')}</span>
+                            ${postType ? `<span>|</span><span>${postType}</span>` : ''}
+                            ${category ? `<span>|</span><span>${category}</span>` : ''}
                         </div>
-                        <div class="post-date">${new Date(post.Posted || post['Publish time']).toLocaleDateString('id-ID')}</div>
                     </div>
                     <div class="post-metrics">
                         <div class="post-engagement">${(post.Engagement_Rate || 0).toFixed(2)}%</div>
@@ -235,11 +242,11 @@
     async function loadQualityAnalysis() {
         const container = document.getElementById('qualityAnalysis');
         container.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--text-secondary);">Loading quality analysis...</p>';
-        
+
         try {
             const data = await API.getQualityAnalysis();
             if (data.error) throw new Error(data.error);
-            
+
             renderQualityAnalysis(data);
         } catch (error) {
             container.innerHTML = `<p style="color: var(--danger); text-align: center; padding: 2rem;">❌ ${error.message}</p>`;
@@ -248,7 +255,7 @@
 
     function renderQualityAnalysis(data) {
         const container = document.getElementById('qualityAnalysis');
-        
+
         container.innerHTML = `
             <div style="text-align: center; margin-bottom: 2rem;">
                 <h4 style="margin: 0 0 1rem 0;">📊 Engagement Rate Analysis</h4>
@@ -289,7 +296,7 @@
         try {
             const data = await API.getFollowerTrend();
             if (data.error) throw new Error(data.error);
-            
+
             if (data.dates && data.dates.length > 0) {
                 Charts.create.followerTrend(data, 'followerTrendChart');
             }
@@ -298,200 +305,107 @@
         }
     }
 
-    async function loadCaptionAnalysis() {
+    async function loadCategoryAnalysis() {
         const container = document.getElementById('captionAnalysis');
-        container.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--text-secondary);">Loading caption analysis...</p>';
-        
+        container.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--text-secondary);">Loading category analysis...</p>';
+
         try {
-            const data = await API.getCaptionAnalysis();
+            const data = await API.getCategoryAnalysis();
             if (data.error) throw new Error(data.error);
-            
-            renderCaptionAnalysis(data);
+
+            renderCategoryAnalysis(data);
         } catch (error) {
             container.innerHTML = `<p style="color: var(--danger); text-align: center; padding: 2rem;">❌ ${error.message}</p>`;
         }
     }
 
-    function renderCaptionAnalysis(data) {
+    function renderCategoryAnalysis(data) {
         const container = document.getElementById('captionAnalysis');
-        
-        // Check if data is available
-        if (!data.hashtag_analysis) {
-            container.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--text-secondary);">No caption data available for analysis</p>';
+
+        if (!data.available) {
+            container.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--text-secondary);">No category data available</p>';
             return;
         }
-        
-        const hashtag = data.hashtag_analysis;
-        const length = data.length_analysis;
-        const emoji = data.emoji_analysis;
-        const cta = data.cta_analysis;
-        
+
+        const categories = ['news', 'meme', 'insight', 'edu'];
+        const icons = { news: '📰', meme: '😂', insight: '💡', edu: '📚' };
+        const colors = { news: '#3b82f6', meme: '#f59e0b', insight: '#8b5cf6', edu: '#10b981' };
+        const perf = data.category_performance;
+        const counts = data.category_counts;
+
         container.innerHTML = `
-            <!-- Insights Cards -->
-            <div class="insight-cards" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
-                ${data.insights.map(insight => `
-                    <div class="insight-card" style="padding: 1.5rem; border-radius: 12px; background: var(--card-bg); border-left: 4px solid var(--${
-                        insight.type === 'success' ? 'success' : 
-                        insight.type === 'warning' ? 'warning' : 'info'
-                    });">
-                        <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">${insight.title}</div>
-                        <p style="margin: 0.5rem 0; color: var(--text-secondary);">${insight.message}</p>
-                        <p style="margin: 0.5rem 0; font-weight: 600; color: var(--primary);">${insight.recommendation}</p>
-                    </div>
-                `).join('')}
-            </div>
-            
-            <!-- Analysis Grid -->
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-bottom: 2rem;">
-                <!-- Hashtag Performance -->
-                <div class="analysis-section" style="padding: 1.5rem; background: var(--card-bg); border-radius: 12px;">
-                    <h4 style="margin: 0 0 1rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                        <span>🏷️</span> Hashtag Performance
-                    </h4>
-                    <div class="stat-row" style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--border);">
-                        <span>With Hashtags ER:</span>
-                        <strong>${hashtag.avg_er_with_hashtags.toFixed(2)}%</strong>
-                    </div>
-                    <div class="stat-row" style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--border);">
-                        <span>Without Hashtags ER:</span>
-                        <strong>${hashtag.avg_er_without_hashtags.toFixed(2)}%</strong>
-                    </div>
-                    <div class="stat-row" style="display: flex; justify-content: space-between; padding: 0.75rem 0;">
-                        <span>Performance Lift:</span>
-                        <strong style="color: ${hashtag.performance_lift > 0 ? 'var(--success)' : 'var(--danger)'}">
-                            ${hashtag.performance_lift > 0 ? '+' : ''}${hashtag.performance_lift.toFixed(2)}%
-                        </strong>
-                    </div>
-                    <div class="stat-row" style="display: flex; justify-content: space-between; padding: 0.75rem 0; background: var(--primary-light); margin-top: 1rem; padding: 1rem; border-radius: 8px;">
-                        <span style="font-weight: 600;">Optimal Count:</span>
-                        <strong style="font-size: 1.25rem; color: var(--primary);">${hashtag.optimal_hashtag_count} hashtags</strong>
-                    </div>
-                </div>
-                
-                <!-- Caption Length -->
-                <div class="analysis-section" style="padding: 1.5rem; background: var(--card-bg); border-radius: 12px;">
-                    <h4 style="margin: 0 0 1rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                        <span>📝</span> Caption Length
-                    </h4>
-                    <div class="stat-row" style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--border);">
-                        <span>Average Words:</span>
-                        <strong>${length.avg_word_count.toFixed(0)} words</strong>
-                    </div>
-                    <div class="stat-row" style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--border);">
-                        <span>Median Words:</span>
-                        <strong>${length.median_word_count.toFixed(0)} words</strong>
-                    </div>
-                    <div class="stat-row" style="display: flex; justify-content: space-between; padding: 0.75rem 0; background: var(--primary-light); margin-top: 1rem; padding: 1rem; border-radius: 8px;">
-                        <span style="font-weight: 600;">Best Performing:</span>
-                        <strong style="font-size: 1.25rem; color: var(--primary);">${length.optimal_length}</strong>
-                    </div>
-                </div>
-                
-                <!-- Emoji Usage -->
-                <div class="analysis-section" style="padding: 1.5rem; background: var(--card-bg); border-radius: 12px;">
-                    <h4 style="margin: 0 0 1rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                        <span>😊</span> Emoji Impact
-                    </h4>
-                    <div class="stat-row" style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--border);">
-                        <span>With Emoji ER:</span>
-                        <strong>${emoji.avg_er_with_emoji.toFixed(2)}%</strong>
-                    </div>
-                    <div class="stat-row" style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--border);">
-                        <span>Without Emoji ER:</span>
-                        <strong>${emoji.avg_er_without_emoji.toFixed(2)}%</strong>
-                    </div>
-                    <div class="stat-row" style="display: flex; justify-content: space-between; padding: 0.75rem 0;">
-                        <span>Performance Lift:</span>
-                        <strong style="color: ${emoji.performance_lift > 0 ? 'var(--success)' : 'var(--danger)'}">
-                            ${emoji.performance_lift > 0 ? '+' : ''}${emoji.performance_lift.toFixed(2)}%
-                        </strong>
-                    </div>
-                    <div class="stat-row" style="display: flex; justify-content: space-between; padding: 0.75rem 0; background: var(--primary-light); margin-top: 1rem; padding: 1rem; border-radius: 8px;">
-                        <span style="font-weight: 600;">Optimal Count:</span>
-                        <strong style="font-size: 1.25rem; color: var(--primary);">${emoji.optimal_emoji_count} emojis</strong>
-                    </div>
-                </div>
-                
-                <!-- CTA Impact -->
-                <div class="analysis-section" style="padding: 1.5rem; background: var(--card-bg); border-radius: 12px;">
-                    <h4 style="margin: 0 0 1rem 0; display: flex; align-items: center; gap: 0.5rem;">
-                        <span>📢</span> Call-to-Action
-                    </h4>
-                    <div class="stat-row" style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--border);">
-                        <span>With CTA ER:</span>
-                        <strong>${cta.avg_er_with_cta.toFixed(2)}%</strong>
-                    </div>
-                    <div class="stat-row" style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--border);">
-                        <span>Comment Lift:</span>
-                        <strong style="color: ${cta.comment_lift > 0 ? 'var(--success)' : 'var(--danger)'}">
-                            ${cta.comment_lift > 0 ? '+' : ''}${cta.comment_lift.toFixed(1)} comments
-                        </strong>
-                    </div>
-                    <div class="stat-row" style="display: flex; justify-content: space-between; padding: 0.75rem 0; background: var(--primary-light); margin-top: 1rem; padding: 1rem; border-radius: 8px;">
-                        <span style="font-weight: 600;">Posts with CTA:</span>
-                        <strong style="font-size: 1.25rem; color: var(--primary);">${cta.posts_with_cta} posts</strong>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Top Hashtags -->
-            ${hashtag.top_hashtags && hashtag.top_hashtags.length > 0 ? `
-                <div style="margin-top: 2rem;">
-                    <h4 style="margin-bottom: 1rem;">🏆 Top Performing Hashtags</h4>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
-                        ${hashtag.top_hashtags.slice(0, 6).map((tag, idx) => `
-                            <div style="padding: 1rem; background: var(--card-bg); border-radius: 8px; border-left: 3px solid var(--primary);">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                                    <span style="font-weight: 700; color: var(--primary); font-size: 1.1rem;">${tag.hashtag}</span>
-                                    <span style="background: var(--primary-light); color: var(--primary); padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">#${idx + 1}</span>
-                                </div>
-                                <div style="font-size: 0.875rem; color: var(--text-secondary);">
-                                    <div>ER: <strong>${tag.avg_engagement_rate.toFixed(2)}%</strong></div>
-                                    <div>Avg Views: <strong>${tag.avg_views.toLocaleString()}</strong></div>
-                                    <div>Used: <strong>${tag.usage_count}x</strong></div>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
+            <!-- Insights -->
+            ${data.insights && data.insights.length > 0 ? `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                    ${data.insights.map(ins => `
+                        <div style="padding: 1.25rem; border-radius: 12px; background: var(--bg-card); border-left: 4px solid var(--${ins.type === 'success' ? 'success' : ins.type === 'warning' ? 'warning' : 'info'});">
+                            <div style="font-weight: 700; margin-bottom: 0.5rem;">${ins.title}</div>
+                            <p style="margin: 0 0 0.5rem 0; color: var(--text-secondary); font-size: 0.9rem;">${ins.message}</p>
+                            <p style="margin: 0; color: var(--primary); font-weight: 600; font-size: 0.875rem;">💡 ${ins.recommendation}</p>
+                        </div>
+                    `).join('')}
                 </div>
             ` : ''}
-            
-            <!-- Top Captions -->
-            ${data.top_captions && data.top_captions.length > 0 ? `
-                <div style="margin-top: 2rem;">
-                    <h4 style="margin-bottom: 1rem;">✨ Top Performing Captions</h4>
-                    <div style="display: flex; flex-direction: column; gap: 1rem;">
-                        ${data.top_captions.map((caption, idx) => `
-                            <div style="padding: 1.5rem; background: var(--card-bg); border-radius: 8px; border-left: 3px solid var(--success);">
-                                <div style="display: flex; justify-content: between; align-items: start; gap: 1rem; margin-bottom: 1rem;">
-                                    <div style="flex: 1;">
-                                        <div style="font-size: 0.95rem; line-height: 1.6; color: var(--text-primary); margin-bottom: 0.75rem;">${caption.caption}</div>
-                                        <div style="display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.875rem; color: var(--text-secondary);">
-                                            <span>📊 ER: <strong>${caption.engagement_rate.toFixed(2)}%</strong></span>
-                                            <span>👁️ Views: <strong>${caption.views.toLocaleString()}</strong></span>
-                                            <span>📝 ${caption.word_count} words</span>
-                                            <span>🏷️ ${caption.hashtag_count} hashtags</span>
-                                            <span>😊 ${caption.emoji_count} emojis</span>
-                                            ${caption.has_cta ? '<span style="color: var(--success);">✅ Has CTA</span>' : ''}
-                                        </div>
-                                    </div>
+
+            <!-- Category Cards -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem;">
+                ${categories.map(cat => {
+            const p = perf[cat];
+            const c = counts[cat];
+            const icon = icons[cat];
+            const color = colors[cat];
+
+            return `
+                        <div style="padding: 1.5rem; background: var(--bg-card); border-radius: 16px; border: 2px solid ${color}30;">
+                            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+                                <span style="font-size: 2rem;">${icon}</span>
+                                <div>
+                                    <h4 style="margin: 0; font-size: 1.25rem; color: ${color};">#${cat.toUpperCase()}</h4>
+                                    <span style="font-size: 0.875rem; color: var(--text-tertiary);">${c.count} posts (${c.percentage}%)</span>
                                 </div>
                             </div>
-                        `).join('')}
-                    </div>
-                </div>
-            ` : ''}
+                            
+                            <div style="display: grid; gap: 0.5rem; font-size: 0.9rem;">
+                                <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border);">
+                                    <span style="color: var(--text-secondary);">Avg Views</span>
+                                    <strong>${Number(p.avg_views).toLocaleString()}</strong>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border);">
+                                    <span style="color: var(--text-secondary);">Avg Likes</span>
+                                    <strong>${Number(p.avg_likes).toLocaleString()}</strong>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border);">
+                                    <span style="color: var(--text-secondary);">Avg Comments</span>
+                                    <strong>${p.avg_comments}</strong>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border);">
+                                    <span style="color: var(--text-secondary);">Avg Shares</span>
+                                    <strong>${p.avg_shares}</strong>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border);">
+                                    <span style="color: var(--text-secondary);">Avg Saves</span>
+                                    <strong>${p.avg_saves}</strong>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; padding: 0.5rem 0;">
+                                    <span style="color: var(--text-secondary);">Engagement Rate</span>
+                                    <strong>${p.avg_engagement_rate}%</strong>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+        }).join('')}
+            </div>
         `;
     }
 
     async function loadDurationAnalysis() {
         const container = document.getElementById('durationAnalysis');
         container.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--text-secondary);">Loading duration analysis...</p>';
-        
+
         try {
             const data = await API.getDurationAnalysis();
             if (data.error) throw new Error(data.error);
-            
+
             renderDurationAnalysis(data);
         } catch (error) {
             container.innerHTML = `<p style="color: var(--danger); text-align: center; padding: 2rem;">❌ ${error.message}</p>`;
@@ -500,15 +414,15 @@
 
     function renderDurationAnalysis(data) {
         const container = document.getElementById('durationAnalysis');
-        
+
         if (!data.available) {
             container.innerHTML = `<p style="text-align: center; padding: 2rem; color: var(--text-secondary);">${data.message || 'Duration data not available'}</p>`;
             return;
         }
-        
+
         const sweet = data.sweet_spot;
         const dist = data.distribution;
-        
+
         container.innerHTML = `
             <!-- Sweet Spot Highlight -->
             <div style="text-align: center; padding: 2rem; background: linear-gradient(135deg, var(--primary-light) 0%, var(--card-bg) 100%); border-radius: 12px; margin-bottom: 2rem;">
@@ -537,10 +451,9 @@
             <!-- Insights -->
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
                 ${data.insights.map(insight => `
-                    <div style="padding: 1.5rem; border-radius: 12px; background: var(--card-bg); border-left: 4px solid var(--${
-                        insight.type === 'success' ? 'success' : 
-                        insight.type === 'warning' ? 'warning' : 'info'
-                    });">
+                    <div style="padding: 1.5rem; border-radius: 12px; background: var(--card-bg); border-left: 4px solid var(--${insight.type === 'success' ? 'success' :
+                insight.type === 'warning' ? 'warning' : 'info'
+            });">
                         <div style="font-size: 1.25rem; margin-bottom: 0.5rem; font-weight: 600;">${insight.title}</div>
                         <p style="margin: 0.5rem 0; color: var(--text-secondary); font-size: 0.95rem;">${insight.message}</p>
                         <p style="margin: 0.5rem 0; font-weight: 600; color: var(--primary); font-size: 0.9rem;">${insight.recommendation}</p>

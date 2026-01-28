@@ -36,8 +36,8 @@ const API = {
         return await response.json();
     },
 
-    async getCaptionAnalysis() {
-        const response = await fetch('/caption-analysis');
+    async getCategoryAnalysis() {
+        const response = await fetch('/category-analysis');
         return await response.json();
     },
 
