@@ -89,6 +89,17 @@
         UI.hide('mainHeader');
         UI.show('analysisNavbar');
 
+        // Dispatch event for navbar with date range
+        const dateRange = STATE.dashboardData.date_range;
+        document.dispatchEvent(new CustomEvent('dataUploaded', {
+            detail: {
+                dateRange: dateRange ? {
+                    start: dateRange.start,
+                    end: dateRange.end
+                } : null
+            }
+        }));
+
         // Update UI with data
         UI.updateDateRange(STATE.dashboardData.date_range);
         UI.createKPICards(STATE.dashboardData);
@@ -110,8 +121,8 @@
 
     function loadContentTypeAnalysis() {
         // Use pre-loaded data from STATE
-        const data = STATE.dashboardData.content_type_performance ?
-            { content_type_performance: STATE.dashboardData.content_type_performance } :
+        const data = STATE.dashboardData.post_type_performance ?
+            { content_type_performance: STATE.dashboardData.post_type_performance } :
             null;
 
         if (data) {

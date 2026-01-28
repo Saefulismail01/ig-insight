@@ -1,52 +1,88 @@
-// Navigation Bar Controller
+// Navigation Bar Controller - Modern Dropdown Design
 class NavigationBar {
     constructor() {
         this.navbar = document.getElementById('analysisNavbar');
-        this.navLinks = document.querySelectorAll('.nav-link');
-        this.navbarToggle = document.getElementById('navbarToggle');
-        this.isMenuOpen = false;
+        this.trigger = document.getElementById('navbarDropdownTrigger');
+        this.dropdown = document.getElementById('navbarDropdown');
+        this.dateRange = document.getElementById('navbarDateRange');
+        this.dropdownItems = document.querySelectorAll('.dropdown-item');
+        this.isOpen = false;
         this.activeSection = null;
-        
+
         this.init();
     }
 
     init() {
-        this.setupEventListeners();
+        if (!this.trigger || !this.dropdown) {
+            console.warn('Navigation bar elements not found');
+            return;
+        }
+
+        this.setupDropdownToggle();
+        this.setupItemClicks();
+        this.setupOutsideClick();
         this.setupScrollSpy();
-        this.setupMobileMenu();
+        this.setupEscapeKey();
     }
 
-    setupEventListeners() {
-        // Navigation link clicks
-        this.navLinks.forEach(link => {
-            link.addEventListener('click', (e) => {
+    setupDropdownToggle() {
+        this.trigger.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.toggle();
+        });
+    }
+
+    setupItemClicks() {
+        this.dropdownItems.forEach(item => {
+            item.addEventListener('click', (e) => {
                 e.preventDefault();
-                const targetId = link.getAttribute('href');
+                const targetId = item.getAttribute('href');
                 const targetSection = document.querySelector(targetId);
-                
+
                 if (targetSection) {
                     this.scrollToSection(targetSection);
-                    this.setActiveLink(link);
-                    
-                    // Close mobile menu if open
-                    if (this.isMenuOpen) {
-                        this.toggleMobileMenu();
-                    }
+                    this.setActiveItem(item);
+                    this.close();
                 }
             });
         });
+    }
 
-        // Show navbar after data is loaded
-        document.addEventListener('dataUploaded', () => {
-            this.showNavbar();
+    setupOutsideClick() {
+        document.addEventListener('click', (e) => {
+            if (this.isOpen &&
+                !this.dropdown.contains(e.target) &&
+                !this.trigger.contains(e.target)) {
+                this.close();
+            }
+        });
+
+        // Also close on scroll
+        let scrollTimeout;
+        window.addEventListener('scroll', () => {
+            if (this.isOpen) {
+                clearTimeout(scrollTimeout);
+                scrollTimeout = setTimeout(() => {
+                    this.close();
+                }, 100);
+            }
+        }, { passive: true });
+    }
+
+    setupEscapeKey() {
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && this.isOpen) {
+                this.close();
+            }
         });
     }
 
     setupScrollSpy() {
-        const sections = document.querySelectorAll('section[id]');
+        const sections = document.querySelectorAll('[id]');
         const options = {
             root: null,
-            rootMargin: '-20% 0px -70% 0px',
+            rootMargin: '-15% 0px -75% 0px',
             threshold: 0
         };
 
@@ -54,52 +90,86 @@ class NavigationBar {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     const sectionId = entry.target.id;
-                    this.updateActiveSection(sectionId);
+                    this.updateActiveFromSection(sectionId);
                 }
             });
         }, options);
 
-        sections.forEach(section => observer.observe(section));
+        // Observe key sections
+        const sectionIds = [
+            'kpiGrid',
+            'engagementCharts',
+            'contentTypeAnalysis',
+            'outlierAnalysis',
+            'qualityAnalysis',
+            'captionAnalysis',
+            'durationAnalysis'
+        ];
+
+        sectionIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                observer.observe(el);
+            }
+        });
     }
 
-    setupMobileMenu() {
-        if (this.navbarToggle) {
-            this.navbarToggle.addEventListener('click', () => {
-                this.toggleMobileMenu();
-            });
-
-            // Close menu when clicking outside
-            document.addEventListener('click', (e) => {
-                if (this.isMenuOpen && 
-                    !this.navbar.contains(e.target) && 
-                    !this.navbarToggle.contains(e.target)) {
-                    this.toggleMobileMenu();
-                }
-            });
-        }
-    }
-
-    toggleMobileMenu() {
-        this.isMenuOpen = !this.isMenuOpen;
-        const navLinks = document.querySelector('.navbar-links');
-        
-        if (this.isMenuOpen) {
-            navLinks.classList.add('active');
-            this.navbarToggle.classList.add('active');
-            this.navbarToggle.innerHTML = '<span>✕</span>';
-            document.body.style.overflow = 'hidden';
+    toggle() {
+        if (this.isOpen) {
+            this.close();
         } else {
-            navLinks.classList.remove('active');
-            this.navbarToggle.classList.remove('active');
-            this.navbarToggle.innerHTML = '<span>☰</span>';
-            document.body.style.overflow = '';
+            this.open();
         }
+    }
+
+    open() {
+        this.isOpen = true;
+        this.dropdown.classList.add('show');
+        this.trigger.classList.add('active');
+
+        // Trap focus within dropdown
+        this.trapFocus();
+    }
+
+    close() {
+        this.isOpen = false;
+        this.dropdown.classList.remove('show');
+        this.trigger.classList.remove('active');
+    }
+
+    trapFocus() {
+        if (!this.isOpen) return;
+
+        const focusableElements = this.dropdown.querySelectorAll('a, button, [tabindex]:not([tabindex="-1"])');
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+
+        if (firstElement) {
+            firstElement.focus();
+        }
+
+        this.dropdown.addEventListener('keydown', (e) => {
+            if (e.key !== 'Tab') return;
+
+            if (e.shiftKey) {
+                if (document.activeElement === firstElement) {
+                    e.preventDefault();
+                    lastElement.focus();
+                }
+            } else {
+                if (document.activeElement === lastElement) {
+                    e.preventDefault();
+                    firstElement.focus();
+                }
+            }
+        });
     }
 
     scrollToSection(targetSection) {
-        const headerOffset = 100; // Account for sticky header
+        const navbarHeight = this.navbar?.offsetHeight || 80;
+        const offset = navbarHeight + 20;
         const elementPosition = targetSection.getBoundingClientRect().top;
-        const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+        const offsetPosition = elementPosition + window.pageYOffset - offset;
 
         window.scrollTo({
             top: offsetPosition,
@@ -107,58 +177,152 @@ class NavigationBar {
         });
     }
 
-    setActiveLink(activeLink) {
-        this.navLinks.forEach(link => link.classList.remove('active'));
-        activeLink.classList.add('active');
-        this.activeSection = activeLink.dataset.section;
+    setActiveItem(activeItem) {
+        this.dropdownItems.forEach(item => item.classList.remove('active'));
+        activeItem.classList.add('active');
+        this.activeSection = activeItem.dataset.section;
     }
 
-    updateActiveSection(sectionId) {
-        const correspondingLink = document.querySelector(`.nav-link[href="#${sectionId}"]`);
-        if (correspondingLink && correspondingLink.dataset.section !== this.activeSection) {
-            this.setActiveLink(correspondingLink);
+    updateActiveFromSection(sectionId) {
+        const correspondingItem = document.querySelector(`.dropdown-item[href="#${sectionId}"]`);
+
+        if (correspondingItem && correspondingItem.dataset.section !== this.activeSection) {
+            this.setActiveItem(correspondingItem);
+        }
+    }
+
+    /**
+     * Update date range display
+     * @param {string} startDate - Start date string (e.g., "1 Jan 2024")
+     * @param {string} endDate - End date string (e.g., "31 Jan 2024")
+     */
+    setDateRange(startDate, endDate) {
+        if (!this.dateRange) return;
+
+        if (startDate && endDate) {
+            this.dateRange.textContent = `Date Range: ${startDate} – ${endDate}`;
+        } else {
+            this.dateRange.textContent = 'Date Range: All Data';
         }
     }
 
     showNavbar() {
         if (this.navbar) {
             this.navbar.classList.remove('hidden');
-            
-            // Animate entrance
-            setTimeout(() => {
+            // Smooth fade-in
+            this.navbar.style.opacity = '0';
+            this.navbar.style.transform = 'translateY(-10px)';
+            requestAnimationFrame(() => {
+                this.navbar.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
                 this.navbar.style.opacity = '1';
                 this.navbar.style.transform = 'translateY(0)';
-            }, 100);
+            });
         }
     }
 
     hideNavbar() {
         if (this.navbar) {
-            this.navbar.style.opacity = '0';
-            this.navbar.style.transform = 'translateY(-100%)';
-            
-            setTimeout(() => {
-                this.navbar.classList.add('hidden');
-            }, 300);
+            this.navbar.classList.add('hidden');
+            this.close();
         }
     }
 
-    // Public method to programmatically navigate to section
-    navigateToSection(sectionName) {
-        const link = document.querySelector(`.nav-link[data-section="${sectionName}"]`);
-        if (link) {
-            link.click();
-        }
-    }
-
-    // Get current active section
-    getCurrentSection() {
-        return this.activeSection;
+    destroy() {
+        // Cleanup event listeners if needed
+        this.close();
     }
 }
 
 // Initialize navigation bar
-const navBar = new NavigationBar();
+let navBar;
 
-// Make it globally accessible
-window.navBar = navBar;
+function initializeNavBar() {
+    if (!navBar) {
+        navBar = new NavigationBar();
+        window.navBar = navBar;
+    }
+}
+
+// Initialize on DOM ready
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeNavBar);
+} else {
+    initializeNavBar();
+}
+
+// Listen for data upload to show navbar and set date range
+document.addEventListener('dataUploaded', (e) => {
+    if (navBar) {
+        navBar.showNavbar();
+
+        // Try to extract and format date range from uploaded data
+        if (e.detail && e.detail.dateRange) {
+            const { start, end } = e.detail.dateRange;
+            navBar.setDateRange(start, end);
+        } else if (e.detail && e.detail.data) {
+            // Try to extract dates from data if not provided
+            try {
+                const dates = extractDateRange(e.detail.data);
+                if (dates) {
+                    navBar.setDateRange(dates.start, dates.end);
+                }
+            } catch (err) {
+                console.warn('Could not extract date range:', err);
+            }
+        }
+    }
+});
+
+/**
+ * Helper function to extract date range from data
+ * @param {Array} data - Array of data objects
+ * @returns {Object|null} - Object with start and end dates or null
+ */
+function extractDateRange(data) {
+    if (!Array.isArray(data) || data.length === 0) return null;
+
+    try {
+        // Find date field (common names: date, posted_at, created_at, timestamp)
+        const dateFields = ['date', 'posted_at', 'created_at', 'timestamp', 'Date', 'Posted At'];
+        let dateField = null;
+
+        for (const field of dateFields) {
+            if (data[0].hasOwnProperty(field)) {
+                dateField = field;
+                break;
+            }
+        }
+
+        if (!dateField) return null;
+
+        // Get all dates
+        const dates = data
+            .map(item => new Date(item[dateField]))
+            .filter(date => !isNaN(date.getTime()))
+            .sort((a, b) => a - b);
+
+        if (dates.length === 0) return null;
+
+        const startDate = dates[0];
+        const endDate = dates[dates.length - 1];
+
+        // Format dates
+        const formatDate = (date) => {
+            const day = date.getDate();
+            const month = date.toLocaleString('en', { month: 'short' });
+            const year = date.getFullYear();
+            return `${day} ${month} ${year}`;
+        };
+
+        return {
+            start: formatDate(startDate),
+            end: formatDate(endDate)
+        };
+    } catch (err) {
+        console.error('Error extracting date range:', err);
+        return null;
+    }
+}
+
+// Export for use in other modules
+window.NavigationBar = NavigationBar;
