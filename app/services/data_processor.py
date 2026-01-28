@@ -6,6 +6,10 @@ import pandas as pd
 import numpy as np
 from ..utils.serializer import serialize_data
 from ..utils.validators import validate_csv_columns
+from .quality_analyzer import QualityAnalyzer
+from .outlier_analyzer import OutlierAnalyzer
+from .hashtag_category_analyzer import HashtagCategoryAnalyzer
+from .duration_optimizer import DurationOptimizer
 
 
 class DataProcessor:
@@ -64,6 +68,32 @@ class DataProcessor:
             # Weekly trends
             weekly_trends = self._analyze_weekly_trends(df)
             
+            # --- INTEGRATED ANALYSES FOR STATELESS VERCEL DEPLOYMENT ---
+            
+            # Quality Analysis
+            print("Running Quality Analysis...")
+            quality_analyzer = QualityAnalyzer()
+            quality_analysis = quality_analyzer.perform_quality_analysis(df)
+            
+            # Outlier Analysis
+            print("Running Outlier Analysis...")
+            outlier_analyzer = OutlierAnalyzer()
+            outlier_analysis = outlier_analyzer.perform_outlier_analysis(df)
+            
+            # Category Analysis
+            print("Running Category Analysis...")
+            category_analyzer = HashtagCategoryAnalyzer()
+            category_analysis = category_analyzer.perform_category_analysis(df)
+            
+            # Duration Analysis
+            print("Running Duration Analysis...")
+            duration_optimizer = DurationOptimizer()
+            duration_analysis = duration_optimizer.perform_duration_analysis(df)
+            
+            # Follower Trend Analysis
+            print("Running Follower Trend Analysis...")
+            follower_trend = self._analyze_follower_trend(df)
+
             # Generate insights
             from .insights_generator import InsightsGenerator
             insights_gen = InsightsGenerator()
@@ -94,7 +124,14 @@ class DataProcessor:
                 'optimal_posting_time': optimal_posting_time,
                 'weekly_trends': weekly_trends,
                 'best_performing': best_performing,
-                'advanced_insights': insights
+                'advanced_insights': insights,
+                
+                # Add integrated analysis results
+                'quality_analysis': quality_analysis,
+                'outlier_analysis': outlier_analysis,
+                'category_analysis': category_analysis,
+                'duration_analysis': duration_analysis,
+                'follower_trend': follower_trend
             })
             
         except Exception as e:
@@ -301,10 +338,163 @@ class DataProcessor:
     
     def _analyze_weekly_trends(self, df):
         """Analyze weekly trends"""
-        weekly_trends = df.groupby('Publish_Week').agg({
-            'Views': 'mean',
-            'Engagement_Rate': 'mean',
-            'Virality_Score': 'mean'
-        }).reset_index()
         weekly_trends['Publish_Week'] = weekly_trends['Publish_Week'].dt.start_time.dt.strftime('%Y-%m-%d')
         return weekly_trends.to_dict('records')
+
+    def _analyze_follower_trend(self, df):
+        """Analyze follower trend (moved from analysis.py for stateless architecture)"""
+        try:
+            # Prepare DF for time series
+            df_trend = df.copy()
+            if 'Publish time' not in df_trend.columns:
+                return {'error': 'Publish time column missing'}
+                
+            df_trend = df_trend.sort_values('Publish time')
+            
+            # Ensure potential columns are numeric
+            potential_cols = ['Follows', 'follows', 'Net Followers', 'Views', 'Impressions', 'Reach', 'Plays', 'views', 'impressions', 'Likes', 'Shares', 'Saves', 'Comments']
+            for col in potential_cols:
+                if col in df_trend.columns:
+                    df_trend[col] = pd.to_numeric(df_trend[col], errors='coerce').fillna(0)
+            
+            # Robust column mapping with Reach as primary fallback
+            def find_col(possible_names, default=None):
+                for name in possible_names:
+                    if name in df_trend.columns:
+                        col_sum = df_trend[name].sum()
+                        if col_sum > 0:
+                            return name
+                # Fallback to first existing column even if zero
+                for name in possible_names:
+                    if name in df_trend.columns:
+                        return name
+                return default
+
+            # Try Reach first since Instagram CSV often uses Reach instead of Views
+            view_col = find_col(['Reach', 'Views', 'Impressions', 'Plays', 'views', 'impressions', 'reach'], 'Reach')
+            follow_col = find_col(['Follows', 'follows', 'Net Followers'], 'Follows')
+            
+            if view_col not in df_trend.columns: df_trend[view_col] = 0
+            if follow_col not in df_trend.columns: df_trend[follow_col] = 0
+
+            df_trend['Date'] = df_trend['Publish time'].dt.date
+            cols_to_agg = {
+                follow_col: 'sum',
+                view_col: 'sum',
+                'Likes': 'sum',
+                'Shares': 'sum',
+                'Saves': 'sum',
+                'Comments': 'sum'
+            }
+            cols_to_agg = {k: v for k, v in cols_to_agg.items() if k in df_trend.columns}
+            
+            daily_data = df_trend.groupby('Date').agg(cols_to_agg).reset_index()
+            
+            # Rename for internal consistency
+            daily_data = daily_data.rename(columns={follow_col: 'Follows', view_col: 'Views'})
+            if 'Follows' not in daily_data.columns: daily_data['Follows'] = 0
+            if 'Views' not in daily_data.columns: daily_data['Views'] = 0
+            
+            daily_data['Cumulative_Followers'] = daily_data['Follows'].cumsum()
+            daily_data['Engagement_Rate'] = (
+                (daily_data['Likes'] + daily_data['Comments'] + daily_data['Shares'] + daily_data['Saves']) / 
+                daily_data['Views'].replace(0, 1)
+            ) * 100
+            
+            if len(daily_data) == 0:
+                return {'error': 'No daily data available'}
+
+            # Advanced Analysis: Growth Phases & Strategy Change
+            views_mean = daily_data['Views'].mean()
+            views_std = daily_data['Views'].std()
+            strategy_change_idx = 0
+            
+            for i in range(1, len(daily_data)):
+                if daily_data.loc[i, 'Views'] > (views_mean + 1.5 * views_std):
+                    strategy_change_idx = i
+                    break
+            
+            strategy_change_date = daily_data.loc[strategy_change_idx, 'Date'].strftime('%Y-%m-%d')
+            
+            # Identify Growth Phases
+            phases = []
+            if strategy_change_idx > 0:
+                phases.append({
+                    'name': 'Dormant Phase',
+                    'start_date': daily_data.loc[0, 'Date'].strftime('%Y-%m-%d'),
+                    'end_date': daily_data.loc[strategy_change_idx-1, 'Date'].strftime('%Y-%m-%d'),
+                    'color': 'rgba(148, 163, 184, 0.1)'
+                })
+            
+            growth_period = daily_data.iloc[strategy_change_idx:]
+            plateau_idx = len(daily_data) - 1
+            if len(growth_period) > 10:
+                recent_growth = daily_data['Follows'].iloc[-7:].mean()
+                mid_growth = daily_data['Follows'].iloc[strategy_change_idx:-7].mean()
+                if recent_growth < mid_growth * 0.5:
+                    plateau_idx = len(daily_data) - 7
+            
+            phases.append({
+                'name': 'Growth Phase',
+                'start_date': strategy_change_date,
+                'end_date': daily_data.loc[plateau_idx, 'Date'].strftime('%Y-%m-%d'),
+                'color': 'rgba(34, 197, 94, 0.1)'
+            })
+            
+            if plateau_idx < len(daily_data) - 1:
+                phases.append({
+                    'name': 'Plateau Phase',
+                    'start_date': daily_data.loc[plateau_idx + 1, 'Date'].strftime('%Y-%m-%d'),
+                    'end_date': daily_data.loc[len(daily_data)-1, 'Date'].strftime('%Y-%m-%d'),
+                    'color': 'rgba(234, 179, 8, 0.1)'
+                })
+
+            # Calculate peaks
+            peak_follows_idx = daily_data['Follows'].idxmax()
+            peak_follows_val = int(daily_data.loc[peak_follows_idx, 'Follows'])
+            peak_follows_date = daily_data.loc[peak_follows_idx, 'Date'].strftime('%Y-%m-%d')
+            
+            peak_views_idx = daily_data['Views'].idxmax()
+            peak_views_val = int(daily_data.loc[peak_views_idx, 'Views'])
+            peak_views_date = daily_data.loc[peak_views_idx, 'Date'].strftime('%Y-%m-%d')
+
+            # Generate summary insight
+            total_growth = daily_data['Cumulative_Followers'].iloc[-1] - daily_data['Cumulative_Followers'].iloc[0]
+            summary_insight = f"Follower growth accelerated after strategy change on {strategy_change_date}"
+            if plateau_idx < len(daily_data) - 1:
+                summary_insight += ", followed by a plateau phase recently."
+            else:
+                summary_insight += ", continuing a steady upward trend."
+
+            from datetime import datetime
+            return {
+                '_generated_at': datetime.now().isoformat(),
+                'dates': [date.strftime('%Y-%m-%d') for date in daily_data['Date']],
+                'cumulative_followers': daily_data['Cumulative_Followers'].tolist(),
+                'daily_views': daily_data['Views'].tolist(),
+                'daily_follows': daily_data['Follows'].tolist(),
+                'engagement_rate': daily_data['Engagement_Rate'].round(2).tolist(),
+                'total_followers': int(daily_data['Cumulative_Followers'].iloc[-1]) if len(daily_data) > 0 else 0,
+                'total_views': int(daily_data['Views'].sum()) if len(daily_data) > 0 else 0,
+                'total_days': len(daily_data),
+                'avg_daily_follows': round(daily_data['Follows'].mean(), 1) if len(daily_data) > 0 else 0,
+                'avg_daily_views': round(daily_data['Views'].mean(), 1) if len(daily_data) > 0 else 0,
+                'peak_follows': peak_follows_val,
+                'peak_date': peak_follows_date,
+                'peak_views': peak_views_val,
+                'peak_views_date': peak_views_date,
+                'strategy_change_date': strategy_change_date,
+                'phases': phases,
+                'summary_insight': summary_insight,
+                'insights': [
+                    f"Total followers gained: {total_growth:,.0f}",
+                    f"Total views accumulated: {daily_data['Views'].sum() if len(daily_data) > 0 else 0:,.0f}",
+                    f"Average daily follows: {daily_data['Follows'].mean():.1f}",
+                    f"Peak daily follows: {peak_follows_val:,} on {peak_follows_date}",
+                    f"Strategy Change detected on {strategy_change_date}"
+                ]
+            }
+
+        except Exception as e:
+            print(f"Error in follower trend analysis: {str(e)}")
+            return {'error': str(e)}

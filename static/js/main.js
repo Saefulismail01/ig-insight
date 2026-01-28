@@ -108,17 +108,82 @@
         loadDurationAnalysis();
     }
 
-    async function loadContentTypeAnalysis() {
-        const container = document.getElementById('contentTypeAnalysis');
-        container.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--text-secondary);">Loading content type analysis...</p>';
+    function loadContentTypeAnalysis() {
+        // Use pre-loaded data from STATE
+        const data = STATE.dashboardData.content_type_performance ?
+            { content_type_performance: STATE.dashboardData.content_type_performance } :
+            null;
 
-        try {
-            const data = await API.getContentTypeAnalysis();
-            if (data.error) throw new Error(data.error);
-
+        if (data) {
             renderContentTypeAnalysis(data);
-        } catch (error) {
-            container.innerHTML = `<p style="color: var(--danger); text-align: center; padding: 2rem;">❌ ${error.message}</p>`;
+        } else {
+            const container = document.getElementById('contentTypeAnalysis');
+            container.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--text-secondary);">No content type data available</p>';
+        }
+    }
+
+    function loadOutlierAnalysis() {
+        // Use pre-loaded data from STATE
+        const data = STATE.dashboardData.outlier_analysis;
+
+        if (data && !data.error) {
+            renderOutlierAnalysis(data);
+        } else {
+            const container = document.getElementById('outlierAnalysis');
+            container.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--text-secondary);">No outlier data available</p>';
+        }
+    }
+
+    async function loadQualityAnalysis() {
+        // Use pre-loaded data from STATE (async signature kept for compatibility if needed, but logic is sync)
+        const data = STATE.dashboardData.quality_analysis;
+
+        if (data && !data.error) {
+            renderQualityAnalysis(data);
+        } else {
+            const container = document.getElementById('qualityAnalysis');
+            container.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--text-secondary);">No quality analysis data available</p>';
+        }
+    }
+
+    function loadFollowerTrend() {
+        // Use pre-loaded data from STATE
+        const data = STATE.dashboardData.follower_trend;
+
+        if (data && !data.error && data.dates && data.dates.length > 0) {
+            Charts.create.followerTrend(data, 'followerTrendChart');
+
+            // Update insight layer
+            const insightEl = document.getElementById('followerTrendInsight');
+            if (insightEl && data.summary_insight) {
+                insightEl.innerHTML = `💡 ${data.summary_insight}`;
+            }
+        } else {
+            console.warn('Follower trend data missing or invalid', data);
+        }
+    }
+
+    function loadCategoryAnalysis() {
+        // Use pre-loaded data from STATE
+        const data = STATE.dashboardData.category_analysis;
+
+        if (data && !data.error) {
+            renderCategoryAnalysis(data);
+        } else {
+            const container = document.getElementById('captionAnalysis');
+            container.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--text-secondary);">No category data available</p>';
+        }
+    }
+
+    function loadDurationAnalysis() {
+        // Use pre-loaded data from STATE
+        const data = STATE.dashboardData.duration_analysis;
+
+        if (data && !data.error) {
+            renderDurationAnalysis(data);
+        } else {
+            const container = document.getElementById('durationAnalysis');
+            container.innerHTML = '<p style="text-align: center; padding: 2rem; color: var(--text-secondary);">No duration data available</p>';
         }
     }
 
