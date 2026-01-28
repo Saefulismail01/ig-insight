@@ -108,7 +108,7 @@ body::before {
 
 /* Add padding when navbar is visible */
 body:has(.analysis-navbar:not(.hidden)) .container {
-    padding-top: 100px;
+    padding-top: 110px;
 }
 
 /* Header Styles */
@@ -272,6 +272,7 @@ h1 {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
     gap: 1.5rem;
+    margin-top: 1rem;
     margin-bottom: 2.5rem;
 }
 
@@ -311,13 +312,13 @@ h1 {
 }
 
 .kpi-icon {
-    width: 56px;
-    height: 56px;
+    width: 48px;
+    height: 48px;
     border-radius: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 28px;
+    font-size: 24px;
     margin-bottom: 1.25rem;
     box-shadow: var(--shadow-md);
     animation: iconPulse 2s ease-in-out infinite;
@@ -345,8 +346,8 @@ h1 {
 }
 
 .kpi-value {
-    font-size: 2.5rem;
-    font-weight: 800;
+    font-size: 1.75rem;
+    font-weight: 700;
     background: var(--gradient-primary);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
