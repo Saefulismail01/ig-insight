@@ -39,53 +39,59 @@
                     </div>
                 </div>
             </div>
-
         </header>
 
-        <!-- Navigation Navbar -->
+        <!-- Navigation Navbar: Title+Date (LEFT) | Sections Button (RIGHT) -->
         <nav class="analysis-navbar hidden" id="analysisNavbar">
             <div class="navbar-content">
+                <!-- LEFT SIDE: Title + Date Range -->
                 <div class="navbar-header">
                     <div class="navbar-title">Instagram Analysis</div>
                     <div class="navbar-date-range" id="navbarDateRange">Date Range: 1 Jan 2024 – 31 Jan 2024</div>
                 </div>
+
+                <!-- RIGHT SIDE: Toggle Button + Dropdown -->
                 <div class="navbar-toggle-container">
                     <button class="navbar-trigger" id="navbarDropdownTrigger" type="button"
-                        aria-label="Toggle navigation menu" aria-expanded="false">
-                        <span class="navbar-trigger-text">Menu</span>
+                        aria-label="Toggle sections menu" aria-expanded="false">
+                        <span class="navbar-trigger-text">Sections</span>
                         <svg class="chevron-icon" width="16" height="16" viewBox="0 0 16 16" fill="none"
                             xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                             <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                 stroke-linejoin="round" />
                         </svg>
                     </button>
-                </div>
 
-                <div class="navbar-dropdown" id="navbarDropdown" role="menu">
-                    <a href="#kpiGrid" class="dropdown-item" data-section="kpi" role="menuitem">
-                        <span class="item-icon" aria-hidden="true">🎯</span>
-                        <span class="item-text">KPI Overview</span>
-                    </a>
-                    <a href="#contentTypeAnalysis" class="dropdown-item" data-section="content" role="menuitem">
-                        <span class="item-icon" aria-hidden="true">📱</span>
-                        <span class="item-text">Content Types</span>
-                    </a>
-                    <a href="#outlierAnalysis" class="dropdown-item" data-section="outliers" role="menuitem">
-                        <span class="item-icon" aria-hidden="true">⭐</span>
-                        <span class="item-text">Top Performers</span>
-                    </a>
-                    <a href="#qualityAnalysis" class="dropdown-item" data-section="quality" role="menuitem">
-                        <span class="item-icon" aria-hidden="true">🏆</span>
-                        <span class="item-text">Quality Score</span>
-                    </a>
-                    <a href="#captionAnalysis" class="dropdown-item" data-section="captions" role="menuitem">
-                        <span class="item-icon" aria-hidden="true">🏷️</span>
-                        <span class="item-text">Hashtag</span>
-                    </a>
-                    <a href="#durationAnalysis" class="dropdown-item" data-section="duration" role="menuitem">
-                        <span class="item-icon" aria-hidden="true">⏱️</span>
-                        <span class="item-text">Video Duration</span>
-                    </a>
+                    <div class="navbar-dropdown" id="navbarDropdown" role="menu">
+                        <a href="#kpiGrid" class="dropdown-item" data-section="kpi" role="menuitem">
+                            <span class="item-icon" aria-hidden="true">🎯</span>
+                            <span class="item-text">KPI Overview</span>
+                        </a>
+                        <a href="#engagementCharts" class="dropdown-item" data-section="engagement" role="menuitem">
+                            <span class="item-icon" aria-hidden="true">📊</span>
+                            <span class="item-text">Engagement</span>
+                        </a>
+                        <a href="#contentTypeAnalysis" class="dropdown-item" data-section="content" role="menuitem">
+                            <span class="item-icon" aria-hidden="true">📱</span>
+                            <span class="item-text">Content Types</span>
+                        </a>
+                        <a href="#outlierAnalysis" class="dropdown-item" data-section="outliers" role="menuitem">
+                            <span class="item-icon" aria-hidden="true">⭐</span>
+                            <span class="item-text">Top Performers</span>
+                        </a>
+                        <a href="#qualityAnalysis" class="dropdown-item" data-section="quality" role="menuitem">
+                            <span class="item-icon" aria-hidden="true">🏆</span>
+                            <span class="item-text">Quality Score</span>
+                        </a>
+                        <a href="#captionAnalysis" class="dropdown-item" data-section="captions" role="menuitem">
+                            <span class="item-icon" aria-hidden="true">🏷️</span>
+                            <span class="item-text">Captions</span>
+                        </a>
+                        <a href="#durationAnalysis" class="dropdown-item" data-section="duration" role="menuitem">
+                            <span class="item-icon" aria-hidden="true">⏱️</span>
+                            <span class="item-text">Video Duration</span>
+                        </a>
+                    </div>
                 </div>
             </div>
         </nav>
@@ -138,7 +144,7 @@
         </section>
 
         <!-- Dashboard Content -->
-        <div id="dashboardContent" class="hidden dashboard-content expanded">
+        <div id="dashboardContent" class="hidden">
             <!-- KPI Cards -->
             <div class="kpi-grid" id="kpiGrid"></div>
 
@@ -200,11 +206,12 @@
     <!-- Chat Widget will be injected by JS -->
 
     <!-- JavaScript Files -->
-    <script src="/static/js/config.js?v=4.1"></script>
-    <script src="/static/js/api.js?v=4.1"></script>
-    <script src="/static/js/charts.js?v=4.1"></script>
-    <script src="/static/js/ui.js?v=4.1"></script>
-    <script src="/static/js/navbar.js?v=4.1"></script>
-    <script src="/static/js/main.js?v=4.1"></script>
+    <script src="/static/js/config.js?v=4.2"></script>
+    <script src="/static/js/api.js?v=4.2"></script>
+    <script src="/static/js/charts.js?v=4.2"></script>
+    <script src="/static/js/ui.js?v=4.2"></script>
+    <script src="/static/js/navbar.js?v=4.2"></script>
+    <script src="/static/js/main.js?v=4.2"></script>
 
+</body>
 </html>

@@ -125,6 +125,54 @@ header {
     gap: 1.5rem;
 }
 
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Drawdown Toggle Button */
+.drawdown-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    background: var(--bg-card);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    box-shadow: var(--shadow-sm);
+}
+
+.drawdown-toggle:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.drawdown-toggle.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
+
+.toggle-icon {
+    transition: transform var(--transition-normal);
+}
+
+.drawdown-toggle.active .toggle-icon {
+    transform: rotate(180deg);
+}
+
+.toggle-text {
+    transition: opacity var(--transition-normal);
+}
+
 .header-title {
     display: flex;
     align-items: center;
@@ -510,6 +558,24 @@ h1 {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* Dashboard Content Animation */
+.dashboard-content {
+    transition: all var(--transition-slow);
+    overflow: hidden;
+}
+
+.dashboard-content.collapsed {
+    max-height: 0;
+    opacity: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.dashboard-content.expanded {
+    max-height: 10000px;
+    opacity: 1;
 }
 
 /* Utility Classes */

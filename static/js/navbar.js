@@ -1,4 +1,4 @@
-// Navigation Bar Controller - Modern Dropdown Design
+// Navigation Bar Controller - Left/Right Layout Version
 class NavigationBar {
     constructor() {
         this.navbar = document.getElementById('analysisNavbar');
@@ -74,6 +74,7 @@ class NavigationBar {
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && this.isOpen) {
                 this.close();
+                this.trigger.focus();
             }
         });
     }
@@ -126,6 +127,7 @@ class NavigationBar {
         this.isOpen = true;
         this.dropdown.classList.add('show');
         this.trigger.classList.add('active');
+        this.trigger.setAttribute('aria-expanded', 'true');
 
         // Trap focus within dropdown
         this.trapFocus();
@@ -135,6 +137,7 @@ class NavigationBar {
         this.isOpen = false;
         this.dropdown.classList.remove('show');
         this.trigger.classList.remove('active');
+        this.trigger.setAttribute('aria-expanded', 'false');
     }
 
     trapFocus() {
@@ -148,7 +151,7 @@ class NavigationBar {
             firstElement.focus();
         }
 
-        this.dropdown.addEventListener('keydown', (e) => {
+        const handleTabKey = (e) => {
             if (e.key !== 'Tab') return;
 
             if (e.shiftKey) {
@@ -162,7 +165,9 @@ class NavigationBar {
                     firstElement.focus();
                 }
             }
-        });
+        };
+
+        this.dropdown.addEventListener('keydown', handleTabKey);
     }
 
     scrollToSection(targetSection) {
@@ -240,6 +245,7 @@ function initializeNavBar() {
     if (!navBar) {
         navBar = new NavigationBar();
         window.navBar = navBar;
+        console.log('✅ Navigation Bar initialized (v4.3 - Clean Layout)');
     }
 }
 
@@ -282,7 +288,7 @@ function extractDateRange(data) {
     if (!Array.isArray(data) || data.length === 0) return null;
 
     try {
-        // Find date field (common names: date, posted_at, created_at, timestamp)
+        // Find date field (common names)
         const dateFields = ['date', 'posted_at', 'created_at', 'timestamp', 'Date', 'Posted At'];
         let dateField = null;
 
