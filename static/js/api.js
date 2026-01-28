@@ -16,6 +16,7 @@ const API = {
         return await response.json();
     },
 
+
     async getContentTypeAnalysis() {
         const response = await fetch('/content-type-analysis');
         return await response.json();
