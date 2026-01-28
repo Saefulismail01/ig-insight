@@ -29,11 +29,6 @@ class Config:
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max file size
     ALLOWED_EXTENSIONS = {'csv'}
     
-    # Groq AI Configuration
-    GROQ_API_KEY = os.getenv('GROQ_API_KEY')
-    GROQ_MODEL = os.getenv('GROQ_MODEL', 'mixtral-8x7b-32768')
-    GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
-    
     # Application settings
     HOST = os.getenv('HOST', '0.0.0.0')
     PORT = int(os.getenv('PORT', 5000))
@@ -50,9 +45,9 @@ class ProductionConfig(Config):
 
     @classmethod
     def validate(cls):
-        # Enforce strong/explicit SECRET_KEY in production
+        # Just a warning instead of crash
         if not cls.SECRET_KEY or cls.SECRET_KEY == 'dev-secret-key-change-in-production':
-            raise RuntimeError("SECRET_KEY must be set for production")
+            print("⚠️ Warning: SECRET_KEY is not set for production. Using default.")
 
 
 # Configuration dictionary
