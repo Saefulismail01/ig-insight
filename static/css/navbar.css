@@ -4,11 +4,15 @@
     background: var(--bg-card);
     border-bottom: 1px solid var(--border);
     padding: 1rem 0;
-    position: sticky;
+    position: fixed;
     top: 0;
+    left: 0;
+    right: 0;
     z-index: 100;
     box-shadow: var(--shadow-sm);
     transition: all 0.3s ease;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
 }
 
 .navbar-content {
@@ -102,11 +106,11 @@
         padding: 0 1rem;
         gap: 1rem;
     }
-    
+
     .navbar-title {
         font-size: 1rem;
     }
-    
+
     .navbar-links {
         position: fixed;
         top: 0;
@@ -122,23 +126,23 @@
         z-index: 1000;
         overflow-y: auto;
     }
-    
+
     .navbar-links.active {
         right: 0;
     }
-    
+
     .nav-link {
         width: 100%;
         padding: 1rem;
         justify-content: flex-start;
         border-radius: 8px;
     }
-    
+
     .navbar-toggle {
         display: block;
         z-index: 1001;
     }
-    
+
     .navbar-toggle.active {
         background: var(--danger);
     }
@@ -149,17 +153,17 @@
     .navbar-content {
         padding: 0 1.5rem;
     }
-    
+
     .nav-text {
         display: none;
     }
-    
+
     .nav-link {
         padding: 0.75rem;
         min-width: 48px;
         justify-content: center;
     }
-    
+
     .navbar-title {
         font-size: 0.875rem;
     }

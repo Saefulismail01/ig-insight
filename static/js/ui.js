@@ -70,7 +70,7 @@ const UI = {
 
     renderAdvancedAnalytics(data) {
         const container = document.getElementById('advancedAnalytics');
-        
+
         container.innerHTML = `
             <div style="margin-bottom: 2rem;">
                 <h4 style="margin-bottom: 1rem; font-size: 1.1rem; color: var(--text-primary);">📅 Best Days to Post</h4>
@@ -81,7 +81,7 @@ const UI = {
             
             <div style="margin-bottom: 2rem;">
                 <h4 style="margin-bottom: 1rem; font-size: 1.1rem; color: var(--text-primary);">💡 Key Insights</h4>
-                <div id="insightsList" style="display: grid; gap: 1rem;"></div>
+                <div id="insightsList" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;"></div>
             </div>
         `;
 
@@ -125,34 +125,29 @@ const UI = {
             });
         }
 
-        const avgReach = data.content_performance?.avg_reach;
-        if (avgReach) {
-            insights.push({
-                icon: '👥',
-                title: 'Average Reach',
-                value: Math.round(avgReach).toLocaleString(),
-                description: 'People reached per post'
-            });
-        }
+        // Only display the first 3 insights
+        const displayInsights = insights.slice(0, 3);
 
-        container.innerHTML = insights.map(insight => `
+        container.innerHTML = displayInsights.map(insight => `
             <div style="
-                background: rgba(99, 102, 241, 0.05);
+                background: var(--bg-card);
                 border: 1px solid var(--border);
-                border-radius: 16px;
-                padding: 1.5rem;
+                border-radius: 20px;
+                padding: 2rem 1.5rem;
                 transition: all 0.3s ease;
                 cursor: pointer;
-            " onmouseover="this.style.borderColor='var(--primary)'; this.style.transform='translateY(-4px)'"
-               onmouseout="this.style.borderColor='var(--border)'; this.style.transform='translateY(0)'">
-                <div style="font-size: 2.5rem; margin-bottom: 0.75rem;">${insight.icon}</div>
-                <div style="font-size: 0.875rem; color: var(--text-tertiary); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">
+                text-align: center;
+                box-shadow: var(--shadow-sm);
+            " onmouseover="this.style.borderColor='var(--primary)'; this.style.transform='translateY(-6px)'; this.style.boxShadow='var(--shadow-lg)'"
+               onmouseout="this.style.borderColor='var(--border)'; this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow-sm)'">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">${insight.icon}</div>
+                <div style="font-size: 0.75rem; color: var(--text-tertiary); margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700;">
                     ${insight.title}
                 </div>
-                <div style="font-size: 1.75rem; font-weight: 800; margin-bottom: 0.5rem; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                <div style="font-size: 2rem; font-weight: 900; margin-bottom: 0.5rem; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
                     ${insight.value}
                 </div>
-                <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                <div style="font-size: 0.875rem; color: var(--text-secondary); font-weight: 500;">
                     ${insight.description}
                 </div>
             </div>

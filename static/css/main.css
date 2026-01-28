@@ -8,23 +8,23 @@
     --primary-light: #eef2ff;
     --secondary: #8b5cf6;
     --accent: #ec4899;
-    
+
     /* Background Colors - Light & Fresh */
     --bg-primary: #f8fafc;
     --bg-secondary: #ffffff;
     --bg-tertiary: #f1f5f9;
     --bg-card: #ffffff;
     --bg-card-hover: #f8fafc;
-    
+
     /* Text Colors */
     --text-primary: #0f172a;
     --text-secondary: #475569;
     --text-tertiary: #64748b;
-    
+
     /* Border Colors */
     --border: #e2e8f0;
     --border-light: #cbd5e1;
-    
+
     /* Status Colors */
     --success: #10b981;
     --success-light: #d1fae5;
@@ -34,18 +34,18 @@
     --danger-light: #fee2e2;
     --info: #3b82f6;
     --info-light: #dbeafe;
-    
+
     /* Gradients */
     --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
     --gradient-secondary: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%);
     --gradient-success: linear-gradient(135deg, #10b981 0%, #14b8a6 100%);
-    
+
     /* Shadows - Softer for light mode */
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.04);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.05);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
     --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-    
+
     /* Transitions */
     --transition-fast: 150ms ease;
     --transition-normal: 250ms ease;
@@ -76,7 +76,7 @@ body::before {
     left: 0;
     width: 100%;
     height: 100%;
-    background: 
+    background:
         radial-gradient(ellipse at 15% 20%, rgba(99, 102, 241, 0.08) 0%, transparent 50%),
         radial-gradient(ellipse at 85% 80%, rgba(139, 92, 246, 0.06) 0%, transparent 50%),
         radial-gradient(ellipse at 50% 50%, rgba(236, 72, 153, 0.04) 0%, transparent 60%);
@@ -86,8 +86,15 @@ body::before {
 }
 
 @keyframes backgroundPulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.7; }
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
 }
 
 .container {
@@ -132,8 +139,15 @@ header {
 }
 
 @keyframes logoFloat {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-8px); }
+
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-8px);
+    }
 }
 
 h1 {
@@ -255,8 +269,15 @@ h1 {
 }
 
 @keyframes iconPulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
 }
 
 .kpi-label {
@@ -282,6 +303,11 @@ h1 {
 .upload-section {
     margin-bottom: 3rem;
     animation: fadeIn 0.6s ease-out 0.2s both;
+}
+
+/* Dashboard content spacing for fixed navbar */
+#dashboardContent {
+    padding-top: 80px;
 }
 
 .upload-area {
@@ -333,8 +359,15 @@ h1 {
 }
 
 @keyframes uploadBounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-12px); }
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-12px);
+    }
 }
 
 /* Charts Section */
@@ -412,8 +445,13 @@ h1 {
 }
 
 @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* Status Messages */
@@ -446,6 +484,7 @@ h1 {
         opacity: 0;
         transform: translateY(-20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -457,6 +496,7 @@ h1 {
         opacity: 0;
         transform: translateY(10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -479,28 +519,41 @@ h1 {
     .container {
         padding: 1rem;
     }
-    
+
     h1 {
         font-size: 2rem;
     }
-    
+
     .logo {
         width: 48px;
         height: 48px;
         font-size: 24px;
     }
-    
+
     .kpi-grid {
         grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
         gap: 1rem;
     }
-    
+
     .charts-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .chart-container {
         height: 300px;
+    }
+
+    /* Make insights stack vertically on mobile */
+    #insightsList {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+    }
+}
+
+/* Tablet responsive for insights */
+@media (max-width: 1024px) and (min-width: 769px) {
+    #insightsList {
+        gap: 1rem !important;
     }
 }
 
