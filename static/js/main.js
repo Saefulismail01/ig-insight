@@ -29,8 +29,6 @@
         // Setup drag and drop
         setupDragDrop();
 
-        // Setup drawdown toggle
-        setupDrawdownToggle();
     }
 
     function setupFileUpload() {
@@ -61,41 +59,6 @@
         });
     }
 
-    function setupDrawdownToggle() {
-        const drawdownToggle = document.getElementById('drawdownToggle');
-        const dashboardContent = document.getElementById('dashboardContent');
-
-        // Only setup toggle if elements exist
-        if (!drawdownToggle || !dashboardContent) {
-            console.warn('Drawdown toggle elements not found, skipping setup');
-            return;
-        }
-
-        const toggleText = drawdownToggle.querySelector('.toggle-text');
-
-        drawdownToggle.addEventListener('click', () => {
-            const isCollapsed = dashboardContent.classList.contains('collapsed');
-
-            if (isCollapsed) {
-                // Expand content
-                dashboardContent.classList.remove('collapsed');
-                dashboardContent.classList.add('expanded');
-                drawdownToggle.classList.remove('active');
-                if (toggleText) toggleText.textContent = 'Sembunyikan';
-            } else {
-                // Collapse content
-                dashboardContent.classList.remove('expanded');
-                dashboardContent.classList.add('collapsed');
-                drawdownToggle.classList.add('active');
-                if (toggleText) toggleText.textContent = 'Tampilkan';
-            }
-        });
-
-        // Initially hide toggle if dashboard is not visible
-        if (dashboardContent.classList.contains('hidden')) {
-            drawdownToggle.style.display = 'none';
-        }
-    }
 
     async function handleFileUpload(event) {
         const file = event.target.files[0];

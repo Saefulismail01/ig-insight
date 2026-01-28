@@ -141,17 +141,7 @@ const UI = {
         const displayInsights = insights.slice(0, 3);
 
         container.innerHTML = displayInsights.map(insight => `
-            <div style="
-                background: var(--bg-card);
-                border: 1px solid var(--border);
-                border-radius: 20px;
-                padding: 2rem 1.5rem;
-                transition: all 0.3s ease;
-                cursor: pointer;
-                text-align: center;
-                box-shadow: var(--shadow-sm);
-            " onmouseover="this.style.borderColor='var(--primary)'; this.style.transform='translateY(-6px)'; this.style.boxShadow='var(--shadow-lg)'"
-               onmouseout="this.style.borderColor='var(--border)'; this.style.transform='translateY(0)'; this.style.boxShadow='var(--shadow-sm)'">
+            <div class="insight-card">
                 <div style="font-size: 3rem; margin-bottom: 1rem;">${this.escapeHtml(insight.icon)}</div>
                 <div style="font-size: 0.75rem; color: var(--text-tertiary); margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700;">
                     ${this.escapeHtml(insight.title)}

@@ -267,6 +267,24 @@ h1 {
     gap: 0.75rem;
 }
 
+/* Insight Cards - Advanced Analytics */
+.insight-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2rem 1.5rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+}
+
+.insight-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-lg);
+}
+
 /* KPI Cards */
 .kpi-grid {
     display: grid;
